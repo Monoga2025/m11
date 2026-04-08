@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Prevent native touch gestures from interfering with stylus drawing */
+.canvas-wrapper {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Fabric.js injects its own wrapper; make sure it fills our container */
+.canvas-wrapper .canvas-container {
+  width: 100% !important;
+  height: 100% !important;
+}

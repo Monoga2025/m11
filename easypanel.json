@@ -1,0 +1,39 @@
+{
+  "$schema": "https://easypanel.io/schema/app.json",
+  "services": [
+    {
+      "type": "app",
+      "data": {
+        "projectName": "physicsink",
+        "serviceName": "web",
+        "source": {
+          "type": "image",
+          "image": "ghcr.io/OWNER/physicsink:latest"
+        },
+        "env": "OPENROUTER_API_KEY=tu_key_aqui\nNEXT_PUBLIC_SITE_URL=https://tu-dominio.com\nNODE_ENV=production",
+        "domains": [
+          {
+            "host": "$(PRIMARY_DOMAIN)",
+            "port": 3000,
+            "https": true
+          }
+        ],
+        "ports": [],
+        "mounts": [],
+        "deploy": {
+          "replicas": 1,
+          "zeroDowntime": true
+        },
+        "healthCheck": {
+          "enabled": true,
+          "path": "/api/health",
+          "port": 3000,
+          "initialDelay": 20,
+          "interval": 30,
+          "timeout": 10,
+          "retries": 3
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"process.stdin.resume();let d='';process.stdin.on('data',x=>d+=x);process.stdin.on('end',()=>{try{const f=JSON.parse(d).tool_input.file_path;if(/\\.tsx?$/.test(f)){require('child_process').spawnSync('npx',['tsc','--noEmit'],{stdio:'inherit',shell:true})}}catch{}})\"",
+            "timeout": 60,
+            "statusMessage": "Verificando tipos TypeScript..."
+          }
+        ]
+      }
+    ]
+  }
+}
