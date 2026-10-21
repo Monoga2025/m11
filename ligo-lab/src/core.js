@@ -5,7 +5,7 @@ window.LIGO = window.LIGO || {};
     on(e, fn) { (listeners[e] = listeners[e] || []).push(fn); },
     emit(e, d) { (listeners[e] || []).forEach(fn => { try { fn(d); } catch (err) { console.error(e, err); } }); }
   };
-  LIGO.state = { preset: 'GW150914', m1: 36, m2: 29, distMpc: 410, incl: 0, exag: 1e20, realistic: false, speed: 1, playing: true, noise: false, view: 'both' };
+  LIGO.state = { preset: 'GW150914', m1: 36, m2: 29, distMpc: 410, incl: 0, exag: 1e20, realistic: false, speed: 0.25, playing: true, noise: false, view: 'both' };
   LIGO.frame = null;
   LIGO.track = null;
   LIGO.setState = function (partial) {
