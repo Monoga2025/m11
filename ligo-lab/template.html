@@ -1,0 +1,64 @@
+<title>LIGO Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--ink:#070a14;--ink-2:#0e1426;--line:#26304f;--text:#e8ecf8;--muted:#8d97b8;--laser:#ff5a3c;--wave:#38e1ff;--wave2:#9b6bff;--warm:#ffb454;
+--f-display:'Bricolage Grotesque',system-ui,sans-serif;--f-body:'IBM Plex Sans',system-ui,sans-serif;--f-mono:'IBM Plex Mono',ui-monospace,monospace}
+html,body{height:auto}
+body{background:var(--ink);color:var(--text);font:15px/1.55 var(--f-body);padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:0}
+*{box-sizing:border-box}
+.wrap{max-width:1400px;margin:0 auto;display:grid;gap:18px;padding-block:20px 48px}
+.hero{display:grid;gap:6px;padding-block:8px}
+.hero h1{font:800 clamp(30px,5.5vw,64px)/1 var(--f-display);letter-spacing:-.02em;margin:0;text-wrap:balance;background:linear-gradient(100deg,var(--wave),var(--wave2) 55%,var(--warm));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{margin:0;color:var(--muted);max-width:68ch}
+.stage{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+.view{position:relative;min-width:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--ink-2);aspect-ratio:4/3}
+.view>div.gl{position:absolute;inset:0}
+.view canvas{display:block;width:100%;height:100%;touch-action:none}
+.tag{position:absolute;left:12px;top:10px;font:500 11px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);background:#070a14cc;padding:4px 8px;border-radius:6px;pointer-events:none;z-index:2}
+.charts{display:grid;gap:14px;grid-template-columns:repeat(3,1fr)}
+.chart{min-width:0;border:1px solid var(--line);border-radius:12px;background:var(--ink-2);padding:10px 12px 12px;display:grid;gap:6px}
+.chart h3{margin:0;font:600 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.chart canvas{width:100%;height:170px;display:block}
+.panels{display:grid;gap:14px;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)}
+.col{display:grid;gap:14px;align-content:start;min-width:0}
+.panel{border:1px solid var(--line);border-radius:12px;background:var(--ink-2);padding:14px;min-width:0}
+.panel>h2{margin:0 0 10px;font:800 20px var(--f-display);letter-spacing:-.01em}
+@media(max-width:900px){.stage,.charts,.panels{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<style id="ui-css">/*__STYLE__*/</style>
+<div class="wrap">
+  <header class="hero">
+    <h1>LIGO Lab</h1>
+    <p>Dos agujeros negros chocan a 410 millones de parsecs. Un láser de 4 km detecta cómo el espacio se estira menos de la milésima parte de un protón. Mueve los controles y mira cómo se escribe esa señal.</p>
+  </header>
+  <section class="stage">
+    <div class="view"><div class="gl" id="universe"></div><span class="tag">El universo · fuente</span></div>
+    <div class="view"><div class="gl" id="detector"></div><span class="tag">El detector · interferómetro 4 km</span></div>
+  </section>
+  <section class="charts">
+    <div class="chart"><h3>Strain h(t)</h3><canvas id="chart-strain"></canvas></div>
+    <div class="chart"><h3>Espectrograma · el chirp</h3><canvas id="chart-spectro"></canvas></div>
+    <div class="chart"><h3>Franjas y fotodiodo</h3><canvas id="chart-fringe"></canvas></div>
+  </section>
+  <section class="panels">
+    <div class="col">
+      <div class="panel" id="controls"></div>
+      <div class="panel" id="readouts"></div>
+      <div class="panel" id="scale"></div>
+    </div>
+    <div class="col">
+      <div class="panel" id="tour"></div>
+      <div class="panel" id="quiz"></div>
+      <div class="panel" id="glossary"></div>
+      <div class="panel" id="lessons"></div>
+    </div>
+  </section>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/*__SCRIPTS__*/
+document.addEventListener('DOMContentLoaded',()=>LIGO.boot());
+if(document.readyState!=='loading')LIGO.boot();
+</script>
