@@ -1,0 +1,3120 @@
+<title>LIGO Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--ink:#070a14;--ink-2:#0e1426;--line:#26304f;--text:#e8ecf8;--muted:#8d97b8;--laser:#ff5a3c;--wave:#38e1ff;--wave2:#9b6bff;--warm:#ffb454;
+--f-display:'Bricolage Grotesque',system-ui,sans-serif;--f-body:'IBM Plex Sans',system-ui,sans-serif;--f-mono:'IBM Plex Mono',ui-monospace,monospace}
+html,body{height:auto}
+body{background:var(--ink);color:var(--text);font:15px/1.55 var(--f-body);padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:0}
+*{box-sizing:border-box}
+.wrap{max-width:1400px;margin:0 auto;display:grid;gap:18px;padding-block:20px 48px}
+.hero{display:grid;gap:6px;padding-block:8px}
+.hero h1{font:800 clamp(30px,5.5vw,64px)/1 var(--f-display);letter-spacing:-.02em;margin:0;text-wrap:balance;background:linear-gradient(100deg,var(--wave),var(--wave2) 55%,var(--warm));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{margin:0;color:var(--muted);max-width:68ch}
+.stage{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+.view{position:relative;min-width:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--ink-2);aspect-ratio:4/3}
+.view>div.gl{position:absolute;inset:0}
+.view canvas{display:block;width:100%;height:100%;touch-action:none}
+.tag{position:absolute;left:12px;top:10px;font:500 11px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);background:#070a14cc;padding:4px 8px;border-radius:6px;pointer-events:none;z-index:2}
+.charts{display:grid;gap:14px;grid-template-columns:repeat(3,1fr)}
+.chart{min-width:0;border:1px solid var(--line);border-radius:12px;background:var(--ink-2);padding:10px 12px 12px;display:grid;gap:6px}
+.chart h3{margin:0;font:600 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.chart canvas{width:100%;height:170px;display:block}
+.panels{display:grid;gap:14px;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)}
+.col{display:grid;gap:14px;align-content:start;min-width:0}
+.panel{border:1px solid var(--line);border-radius:12px;background:var(--ink-2);padding:14px;min-width:0}
+.panel>h2{margin:0 0 10px;font:800 20px var(--f-display);letter-spacing:-.01em}
+@media(max-width:900px){.stage,.charts,.panels{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<style id="ui-css">/* Componentes de LIGO.ui: controles, lecturas, escala, tour, quiz, glosario y lecciones.
+   Variables de color (--ink --ink-2 --line --text --muted --laser --wave --wave2 --warm) vienen de template.html. */
+
+[hidden] { display: none !important; }
+
+#controls, #readouts, #scale, #tour, #quiz, #glossary, #lessons {
+  color: var(--text, #e8ecf7);
+  font-size: 1rem;
+  line-height: 1.4;
+  min-width: 0;
+}
+
+.ui-title {
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  margin: 0 0 0.6rem;
+  color: var(--text, #e8ecf7);
+}
+
+.ui-hint {
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--muted, #8f9bb8);
+  margin: 0.25rem 0 0;
+}
+
+.ui-group-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted, #8f9bb8);
+  margin: 1rem 0 0.4rem;
+}
+
+/* Botones y chips (área táctil >= 44px) */
+
+.ui-btn, .ui-chip, .quiz-opt, .gl-term {
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ui-btn {
+  min-height: 44px;
+  padding: 0 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--line, #2a3150);
+  background: var(--ink-2, #141a30);
+  color: var(--text, #e8ecf7);
+  font-weight: 600;
+}
+
+.ui-btn:hover:not(:disabled) { border-color: var(--wave, #22d3ee); }
+
+.ui-btn-primary {
+  background: linear-gradient(135deg, var(--wave, #22d3ee), var(--wave2, #a78bfa));
+  border-color: transparent;
+  color: var(--ink, #0b0d1a);
+}
+
+.ui-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.ui-audio { width: 100%; }
+
+.ui-transport {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.ui-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ui-chip {
+  min-height: 44px;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--line, #2a3150);
+  background: transparent;
+  color: var(--text, #e8ecf7);
+  font-size: 0.9rem;
+}
+
+.ui-chip[aria-pressed="true"], .ui-chip.is-on {
+  border-color: var(--wave, #22d3ee);
+  background: rgba(34, 211, 238, 0.15);
+}
+
+button:focus-visible, input:focus-visible, .gl-term:focus-visible {
+  outline: 3px solid var(--warm, #ffb36b);
+  outline-offset: 2px;
+}
+
+/* Sliders táctiles grandes */
+
+.ui-field { margin: 0.9rem 0; }
+
+.ui-field-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.ui-label { font-weight: 600; font-size: 0.98rem; }
+
+.ui-out {
+  font-variant-numeric: tabular-nums;
+  color: var(--laser, #ff5a3c);
+  font-weight: 650;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.ui-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 44px;
+  margin: 0.25rem 0 0;
+  background: transparent;
+  touch-action: none;
+  cursor: pointer;
+}
+
+.ui-range::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--wave, #22d3ee), var(--wave2, #a78bfa));
+}
+
+.ui-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 30px;
+  height: 30px;
+  margin-top: -11px;
+  border-radius: 50%;
+  border: 3px solid var(--ink, #0b0d1a);
+  background: var(--warm, #ffb36b);
+  box-shadow: 0 0 0 2px var(--warm, #ffb36b), 0 0 14px rgba(255, 179, 107, 0.45);
+}
+
+.ui-range::-moz-range-track {
+  height: 8px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--wave, #22d3ee), var(--wave2, #a78bfa));
+}
+
+.ui-range::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 3px solid var(--ink, #0b0d1a);
+  background: var(--warm, #ffb36b);
+}
+
+.ui-range:focus-visible::-webkit-slider-thumb { outline: 3px solid var(--warm, #ffb36b); outline-offset: 2px; }
+.ui-range:focus-visible::-moz-range-thumb { outline: 3px solid var(--warm, #ffb36b); outline-offset: 2px; }
+
+@media (pointer: coarse) {
+  .ui-range::-webkit-slider-thumb { width: 36px; height: 36px; margin-top: -14px; }
+  .ui-range::-moz-range-thumb { width: 34px; height: 34px; }
+}
+
+.ui-check-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ui-check {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--warm, #ffb36b);
+  cursor: pointer;
+}
+
+/* Lecturas en vivo */
+
+.ro-list {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.ro-item {
+  background: var(--ink-2, #141a30);
+  border: 1px solid var(--line, #2a3150);
+  border-radius: 12px;
+  padding: 0.5rem 0.65rem;
+  min-width: 0;
+}
+
+.ro-k {
+  font-size: 0.72rem;
+  color: var(--muted, #8f9bb8);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ro-v {
+  margin: 0.15rem 0 0;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.02rem;
+  font-weight: 650;
+  color: var(--text, #e8ecf7);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 420px) {
+  .ro-list { grid-template-columns: 1fr; }
+}
+
+/* Escala logarítmica */
+
+.scale-track {
+  position: relative;
+  height: 12px;
+  margin: 3.4rem 0.5rem 3.6rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--wave, #22d3ee), var(--wave2, #a78bfa) 55%, var(--warm, #ffb36b));
+  opacity: 0.9;
+}
+
+.scale-mark {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.scale-tick {
+  display: block;
+  width: 2px;
+  height: 22px;
+  margin: 0 auto;
+  background: var(--text, #e8ecf7);
+}
+
+.scale-label {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 0.74rem;
+  color: var(--muted, #8f9bb8);
+}
+
+.scale-mark.alt .scale-label {
+  bottom: auto;
+  top: 24px;
+}
+
+.scale-dl {
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--laser, #ff5a3c);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 12px var(--laser, #ff5a3c);
+}
+
+.scale-dl-label {
+  position: absolute;
+  left: -4px;
+  bottom: 24px;
+  transform: none;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: var(--laser, #ff5a3c);
+}
+
+.scale-text {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* Tour guiado */
+
+.tour-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1rem;
+  margin-bottom: 0.4rem;
+}
+
+.tour-dot {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+}
+
+.tour-dot::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: var(--line, #2a3150);
+}
+
+.tour-dot.is-on::after { background: var(--warm, #ffb36b); box-shadow: 0 0 8px var(--warm, #ffb36b); }
+
+.tour-meta {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--warm, #ffb36b);
+}
+
+.tour-h {
+  font-size: 1.15rem;
+  margin: 0.25rem 0 0.4rem;
+  color: var(--text, #e8ecf7);
+}
+
+.tour-body {
+  margin: 0 0 0.6rem;
+  line-height: 1.5;
+}
+
+.tour-reto {
+  margin: 0 0 0.8rem;
+  padding: 0.55rem 0.75rem;
+  border-left: 3px solid var(--laser, #ff5a3c);
+  border-radius: 8px;
+  background: rgba(255, 90, 60, 0.08);
+  line-height: 1.45;
+}
+
+.tour-nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tour-nav .ui-btn { flex: 1; }
+
+/* Resaltado de paneles durante el tour */
+.spot {
+  outline: 2px solid var(--warm, #ffb36b) !important;
+  outline-offset: 4px;
+  border-radius: 12px;
+  box-shadow: 0 0 0 6px rgba(255, 179, 107, 0.16), 0 0 28px rgba(255, 179, 107, 0.35) !important;
+  transition: box-shadow 0.3s ease, outline-color 0.3s ease;
+}
+
+/* Quiz */
+
+.quiz-q {
+  font-size: 1rem;
+  font-weight: 650;
+  margin: 0.2rem 0 0.6rem;
+  line-height: 1.4;
+}
+
+.quiz-opt {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin-bottom: 0.45rem;
+  padding: 0.55rem 0.8rem;
+  text-align: left;
+  border-radius: 12px;
+  border: 1px solid var(--line, #2a3150);
+  background: var(--ink-2, #141a30);
+  color: var(--text, #e8ecf7);
+  line-height: 1.35;
+}
+
+.quiz-opt:disabled { cursor: default; }
+.quiz-opt.is-ok { border-color: #34d399; background: rgba(52, 211, 153, 0.12); }
+.quiz-opt.is-bad { border-color: var(--laser, #ff5a3c); background: rgba(255, 90, 60, 0.12); }
+
+.quiz-fb {
+  min-height: 2.4rem;
+  margin: 0.4rem 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.quiz-fb.ok { color: #6ee7b7; }
+.quiz-fb.bad { color: #fca58a; }
+
+/* Glosario */
+
+.gl-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.gl-term {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-radius: 12px;
+  border: 1px solid var(--line, #2a3150);
+  background: transparent;
+  color: var(--text, #e8ecf7);
+  font-weight: 600;
+}
+
+.gl-term[aria-expanded="true"] { border-color: var(--wave, #22d3ee); background: rgba(34, 211, 238, 0.08); }
+
+.gl-tip {
+  margin: 0.35rem 0 0;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--line, #2a3150);
+  background: var(--ink, #0b0d1a);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Lecciones */
+
+.lessons-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  line-height: 1.55;
+}
+
+.lessons-list li { margin: 0.35rem 0; }
+
+/* Movimiento reducido */
+
+@media (prefers-reduced-motion: reduce) {
+  #controls *, #tour *, #quiz *, #glossary *, .spot {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+</style>
+<div class="wrap">
+  <header class="hero">
+    <h1>LIGO Lab</h1>
+    <p>Dos agujeros negros chocan a 410 millones de parsecs. Un láser de 4 km detecta cómo el espacio se estira menos de la milésima parte de un protón. Mueve los controles y mira cómo se escribe esa señal.</p>
+  </header>
+  <section class="stage">
+    <div class="view"><div class="gl" id="universe"></div><span class="tag">El universo · fuente</span></div>
+    <div class="view"><div class="gl" id="detector"></div><span class="tag">El detector · interferómetro 4 km</span></div>
+  </section>
+  <section class="charts">
+    <div class="chart"><h3>Strain h(t)</h3><canvas id="chart-strain"></canvas></div>
+    <div class="chart"><h3>Espectrograma · el chirp</h3><canvas id="chart-spectro"></canvas></div>
+    <div class="chart"><h3>Franjas y fotodiodo</h3><canvas id="chart-fringe"></canvas></div>
+  </section>
+  <section class="panels">
+    <div class="col">
+      <div class="panel" id="controls"></div>
+      <div class="panel" id="readouts"></div>
+      <div class="panel" id="scale"></div>
+    </div>
+    <div class="col">
+      <div class="panel" id="tour"></div>
+      <div class="panel" id="quiz"></div>
+      <div class="panel" id="glossary"></div>
+      <div class="panel" id="lessons"></div>
+    </div>
+  </section>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+window.LIGO = window.LIGO || {};
+
+LIGO.physics = (function () {
+  var G = 6.674e-11, C = 299792458, MSUN = 1.98847e30, MPC = 3.0857e22;
+  var FS = 2048, F0 = 20, MAX_DUR = 12, Q_RING = 3, MIN_RING = 0.3;
+  var ARM = 4000, LAMBDA = 1064e-9, PROTON = 1.7e-15;
+  var NOISE_RMS = 1e-22;
+  var PI = Math.PI;
+
+  var PRESETS = [
+    { id: 'GW150914', name: 'GW150914', m1: 36, m2: 29, distMpc: 410,
+      desc: 'Primera detección: dos agujeros negros de 36 y 29 M☉ a 410 Mpc' },
+    { id: 'GW170817', name: 'GW170817', m1: 1.46, m2: 1.27, distMpc: 40,
+      desc: 'Fusión de estrellas de neutrones a 40 Mpc' },
+    { id: 'ligeros', name: 'Agujeros ligeros 10+8 @ 200 Mpc', m1: 10, m2: 8, distMpc: 200,
+      desc: 'Agujeros negros poco masivos: el chirp dura más en banda' },
+    { id: 'supermasivos', name: 'Supermasivos-juguete 100+90 @ 800 Mpc', m1: 100, m2: 90, distMpc: 800,
+      desc: 'Masas enormes: la fusión ocurre a frecuencias muy bajas' }
+  ];
+
+  function chirpMass(m1, m2) { return Math.pow(m1 * m2, 0.6) / Math.pow(m1 + m2, 0.2); }
+  function totalMass(m1, m2) { return m1 + m2; }
+  function fIsco(m1, m2) { return 4400 / (m1 + m2); }
+
+  function hAmplitude(f, mc, distMpc) {
+    var Tc = G * mc * MSUN / (C * C);
+    return 4 / (distMpc * MPC) * Math.pow(Tc, 5 / 3) * Math.pow(PI * f / C, 2 / 3);
+  }
+
+  function tauOf(f, Tc) { return (5 / 256) * Math.pow(PI * f, -8 / 3) * Math.pow(Tc, -5 / 3); }
+  function fOfTau(tau, Tc) { return Math.pow(5 / (256 * tau), 3 / 8) * Math.pow(Tc, -5 / 8) / PI; }
+  function sepKmOf(f, M) { return Math.pow(G * M * MSUN / Math.pow(PI * f, 2), 1 / 3) / 1000; }
+
+  function peakStrain(state) {
+    var mc = chirpMass(state.m1, state.m2);
+    var h = hAmplitude(fIsco(state.m1, state.m2), mc, state.distMpc);
+    var c = Math.cos(state.incl || 0);
+    return h * Math.max((1 + c * c) / 2, Math.abs(c));
+  }
+
+  function buildTrack(state) {
+    var m1 = state.m1, m2 = state.m2, D = state.distMpc;
+    var c = Math.cos(state.incl || 0);
+    var mc = chirpMass(m1, m2), M = totalMass(m1, m2);
+    var Tc = G * mc * MSUN / (C * C * C);
+    var fI = fIsco(m1, m2);
+    // Ringdown: QNM fit (Berti) con a_f ~ 0.69, M_f = 0.95 M, Q ~ 3
+    var fR = 0.08446 * C * C * C / (G * 0.95 * M * MSUN);
+    var tauR = Q_RING / (PI * fR);
+    var Tring = Math.max(MIN_RING, 5 * tauR);
+
+    var tauI = tauOf(fI, Tc);
+    var budget = MAX_DUR - Tring;
+    var f0 = Math.min(F0, 0.5 * fI);
+    if (tauOf(f0, Tc) - tauI > budget) {
+      var lo = f0, hi = fI * 0.999;
+      for (var it = 0; it < 80; it++) {
+        var mid = Math.sqrt(lo * hi);
+        if (tauOf(mid, Tc) - tauI > budget) lo = mid; else hi = mid;
+      }
+      f0 = hi;
+    }
+
+    var tau0 = tauOf(f0, Tc);
+    var tMerge = tau0 - tauI;
+    var dt = 1 / FS;
+    var n = Math.ceil((tMerge + Tring) * FS) + 1;
+    var A = Math.pow(5 / 256, 3 / 8) * Math.pow(Tc, -5 / 8);
+    var phiM = 8 / 5 * A * (Math.pow(tau0, 5 / 8) - Math.pow(tauI, 5 / 8));
+    var Am = hAmplitude(fI, mc, D);
+    var sepI = sepKmOf(fI, M);
+
+    var fArr = new Float32Array(n), hP = new Float32Array(n), hX = new Float32Array(n);
+    var sepArr = new Float32Array(n), phArr = new Float32Array(n);
+    for (var k = 0; k < n; k++) {
+      var t = k * dt;
+      if (t <= tMerge) {
+        var tau = Math.max(tau0 - t, tauI);
+        var phi = 8 / 5 * A * (Math.pow(tau0, 5 / 8) - Math.pow(tau, 5 / 8));
+        var fk = fOfTau(tau, Tc);
+        var amp = hAmplitude(fk, mc, D);
+        var psi = 2 * phi;
+        hP[k] = amp * (1 + c * c) / 2 * Math.cos(psi);
+        hX[k] = amp * c * Math.sin(psi);
+        fArr[k] = fk;
+        phArr[k] = phi;
+        sepArr[k] = sepKmOf(fk, M);
+      } else {
+        var dtm = t - tMerge;
+        var env = Math.exp(-dtm / tauR);
+        var psiR = 2 * phiM + 2 * PI * fR * dtm;
+        hP[k] = Am * (1 + c * c) / 2 * env * Math.cos(psiR);
+        hX[k] = Am * c * env * Math.sin(psiR);
+        fArr[k] = fR;
+        phArr[k] = psiR / 2;
+        sepArr[k] = sepI;
+      }
+    }
+
+    return {
+      n: n, dt: dt, duration: (n - 1) * dt, tMerge: tMerge,
+      f: fArr, hPlus: hP, hCross: hX, sepKm: sepArr, phase: phArr
+    };
+  }
+
+  function gauss() {
+    var u = 1 - Math.random(), v = Math.random();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * PI * v);
+  }
+
+  function lerpAt(arr, i, a) { return arr[i] + (arr[i + 1] - arr[i]) * a; }
+
+  function sample(tr, t, state) {
+    state = state || {};
+    var tt = Math.min(Math.max(t, 0), tr.duration);
+    var x = tt / tr.dt;
+    var i = Math.min(Math.floor(x), tr.n - 2);
+    if (i < 0) i = 0;
+    var a = x - i;
+
+    var f = lerpAt(tr.f, i, a);
+    var hp = lerpAt(tr.hPlus, i, a);
+    var hx = lerpAt(tr.hCross, i, a);
+    var sep = lerpAt(tr.sepKm, i, a);
+    var ph = lerpAt(tr.phase, i, a);
+    if (state.noise) {
+      hp += gauss() * NOISE_RMS;
+      hx += gauss() * NOISE_RMS;
+    }
+
+    var dL = hp * ARM / 2;
+    var exag = state.exag || 1;
+    var dLVisual = state.realistic ? dL : dL * exag;
+    var dPhi = 4 * PI * (2 * dLVisual) / LAMBDA;
+    var intensity = Math.pow(Math.cos(dPhi / 2 + PI / 2), 2);
+
+    return {
+      t: tt,
+      tToMerge: tr.tMerge - tt,
+      f: f,
+      hPlus: hp,
+      hCross: hx,
+      sepKm: sep,
+      phase: ph,
+      phase2: 2 * ph,
+      merged: tt >= tr.tMerge,
+      dL: dL,
+      dLVisual: dLVisual,
+      dPhi: dPhi,
+      intensity: intensity,
+      progress: tr.duration > 0 ? tt / tr.duration : 0
+    };
+  }
+
+  var PREFIXES = [
+    [1e12, 'T'], [1e9, 'G'], [1e6, 'M'], [1e3, 'k'], [1, ''],
+    [1e-3, 'm'], [1e-6, 'µ'], [1e-9, 'n'], [1e-12, 'p'], [1e-15, 'f'], [1e-18, 'a']
+  ];
+  var SUP = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+
+  function sup(e) { return String(e).split('').map(function (ch) { return SUP[ch]; }).join(''); }
+
+  function formatSI(x, unit) {
+    var sp = unit ? ' ' + unit : '';
+    if (!isFinite(x)) return '—';
+    if (x === 0) return '0' + sp;
+    var ax = Math.abs(x);
+    if (ax < 1e-18 || ax >= 1e15) {
+      var e = Math.floor(Math.log10(ax));
+      var m = x / Math.pow(10, e);
+      if (Math.abs(m) >= 9.95) { m /= 10; e += 1; }
+      return m.toFixed(1) + '×10' + sup(e) + sp;
+    }
+    for (var i = 0; i < PREFIXES.length; i++) {
+      if (ax >= PREFIXES[i][0] * 0.9999999) {
+        var mant = x / PREFIXES[i][0];
+        var txt = Math.abs(mant) < 10 ? String(Number(mant.toPrecision(2))) : String(Math.round(mant));
+        return txt + ' ' + PREFIXES[i][1] + unit;
+      }
+    }
+    return formatSI(x, unit);
+  }
+
+  function selfTest() {
+    var h = peakStrain({ m1: 36, m2: 29, distMpc: 410, incl: 0 });
+    var mc = chirpMass(36, 29);
+    return h > 3e-22 && h < 3e-21 && mc >= 27 && mc <= 30;
+  }
+
+  return {
+    PRESETS: PRESETS,
+    armLength: ARM,
+    lambda: LAMBDA,
+    protonDiameter: PROTON,
+    chirpMass: chirpMass,
+    totalMass: totalMass,
+    fIsco: fIsco,
+    hAmplitude: hAmplitude,
+    peakStrain: peakStrain,
+    buildTrack: buildTrack,
+    sample: sample,
+    formatSI: formatSI,
+    selfTest: selfTest,
+    init: function () {}
+  };
+})();
+
+if (typeof module !== 'undefined' && typeof window !== 'undefined') module.exports = window.LIGO;
+
+window.LIGO = window.LIGO || {};
+(function () {
+  const listeners = {};
+  LIGO.bus = {
+    on(e, fn) { (listeners[e] = listeners[e] || []).push(fn); },
+    emit(e, d) { (listeners[e] || []).forEach(fn => { try { fn(d); } catch (err) { console.error(e, err); } }); }
+  };
+  LIGO.state = { preset: 'GW150914', m1: 36, m2: 29, distMpc: 410, incl: 0, exag: 1e20, realistic: false, speed: 0.25, playing: true, noise: false, view: 'both' };
+  LIGO.frame = null;
+  LIGO.track = null;
+  LIGO.setState = function (partial) {
+    Object.assign(LIGO.state, partial);
+    const keys = Object.keys(partial);
+    if (keys.some(k => ['m1', 'm2', 'distMpc', 'incl'].includes(k))) { LIGO.track = LIGO.physics.buildTrack(LIGO.state); LIGO.clock.t = 0; LIGO.clock.merged = false; LIGO.bus.emit('reset'); }
+    LIGO.bus.emit('state', partial);
+  };
+  LIGO.clock = { t: 0, merged: false };
+  LIGO.reset = function () { LIGO.clock.t = 0; LIGO.clock.merged = false; LIGO.bus.emit('reset'); };
+
+  LIGO.boot = function () {
+    LIGO.track = LIGO.physics.buildTrack(LIGO.state);
+    ['universe3d', 'detector3d'].forEach(k => { /* creados por boot según contenedores */ });
+    const uni = LIGO.universe3d && document.getElementById('universe') ? LIGO.universe3d.create(document.getElementById('universe')) : null;
+    const det = LIGO.detector3d && document.getElementById('detector') ? LIGO.detector3d.create(document.getElementById('detector')) : null;
+    LIGO.views = { uni, det };
+    ['ui', 'charts'].forEach(k => { if (LIGO[k] && LIGO[k].init) LIGO[k].init(); });
+    window.addEventListener('resize', () => { uni && uni.resize(); det && det.resize(); });
+    if (window.ResizeObserver) {
+      const ro = new ResizeObserver(() => { uni && uni.resize(); det && det.resize(); });
+      ['universe', 'detector'].forEach(id => { const el = document.getElementById(id); el && ro.observe(el); });
+    }
+    let last = performance.now();
+    function loop(now) {
+      const dt = Math.min(0.05, (now - last) / 1000); last = now;
+      const s = LIGO.state, tr = LIGO.track;
+      if (s.playing) {
+        LIGO.clock.t += dt * s.speed;
+        if (LIGO.clock.t > tr.duration + 1.5) { LIGO.clock.t = 0; LIGO.clock.merged = false; LIGO.bus.emit('reset'); }
+      }
+      const fr = LIGO.physics.sample(tr, Math.min(LIGO.clock.t, tr.duration), s);
+      LIGO.frame = fr;
+      if (fr.merged && !LIGO.clock.merged) { LIGO.clock.merged = true; LIGO.bus.emit('merger', fr); }
+      uni && uni.update(fr, s); det && det.update(fr, s);
+      LIGO.bus.emit('frame', fr);
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+  };
+})();
+
+/* LIGO.universe3d: universo 3D (binaria, malla espacio-tiempo, ondas, fusión). */
+(function () {
+  'use strict';
+
+  var LIGO = (window.LIGO = window.LIGO || {});
+  var TAU = Math.PI * 2;
+  var GRID_N = 60;
+  var GRID_R = 7;
+  var BASE_Y = -0.9;
+  var SOFT = 0.9;
+  var S2 = SOFT * SOFT;
+  var WELL_K = 0.8 * SOFT;
+  var RING_POOL = 14;
+  var RING_LIFE = 3.2;
+  var RING_SPEED = 2.2;
+  var STAR_N = 1600;
+  var TARGET_Y = -0.6;
+  var C_CYAN = [0.2, 0.9, 1.0];
+  var C_VIOLET = [0.62, 0.36, 1.0];
+
+  function clamp(x, a, b) { return x < a ? a : (x > b ? b : x); }
+  function smooth(a, b, x) { var t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function rBH(m) { return 0.1 + 0.16 * Math.cbrt(m / 30); }
+
+  function rng(seed) {
+    return function () {
+      seed = (seed + 0x6D2B79F5) | 0;
+      var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function glowTexture() {
+    var c = document.createElement('canvas');
+    c.width = c.height = 128;
+    var g = c.getContext('2d');
+    var grd = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    grd.addColorStop(0, 'rgba(255,255,255,1)');
+    grd.addColorStop(0.2, 'rgba(255,255,255,0.5)');
+    grd.addColorStop(0.5, 'rgba(255,255,255,0.12)');
+    grd.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = grd;
+    g.fillRect(0, 0, 128, 128);
+    return new THREE.CanvasTexture(c);
+  }
+
+  function additiveSprite(tex, color, opacity) {
+    return new THREE.Sprite(new THREE.SpriteMaterial({
+      map: tex, color: color, transparent: true, opacity: opacity,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    }));
+  }
+
+  function additiveMat(color, opacity) {
+    return new THREE.MeshBasicMaterial({
+      color: color, transparent: true, opacity: opacity, side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    });
+  }
+
+  function buildStars() {
+    var rand = rng(20150914);
+    var pos = new Float32Array(STAR_N * 3), col = new Float32Array(STAR_N * 3);
+    var size = new Float32Array(STAR_N), ph = new Float32Array(STAR_N);
+    var tints = [[0.75, 0.85, 1], [1, 0.95, 0.85], [1, 0.8, 0.65], [0.85, 0.75, 1]];
+    for (var i = 0; i < STAR_N; i++) {
+      var u = rand() * 2 - 1, th = rand() * TAU, s = Math.sqrt(1 - u * u), R = 70 + rand() * 40;
+      pos[i * 3] = R * s * Math.cos(th);
+      pos[i * 3 + 1] = R * u;
+      pos[i * 3 + 2] = R * s * Math.sin(th);
+      var tc = tints[Math.floor(rand() * tints.length)];
+      var b = 0.35 + 0.65 * rand() * rand();
+      col[i * 3] = tc[0] * b; col[i * 3 + 1] = tc[1] * b; col[i * 3 + 2] = tc[2] * b;
+      size[i] = 1.0 + Math.pow(rand(), 4) * 4.5;
+      ph[i] = rand();
+    }
+    var g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('aColor', new THREE.BufferAttribute(col, 3));
+    g.setAttribute('aSize', new THREE.BufferAttribute(size, 1));
+    g.setAttribute('aPhase', new THREE.BufferAttribute(ph, 1));
+    var mat = new THREE.ShaderMaterial({
+      uniforms: { uTime: { value: 0 }, uScale: { value: 1 } },
+      vertexShader: [
+        'attribute float aSize; attribute float aPhase; attribute vec3 aColor;',
+        'uniform float uTime; uniform float uScale;',
+        'varying vec3 vColor; varying float vA;',
+        'void main(){',
+        '  vColor = aColor;',
+        '  vA = 0.7 + 0.3 * sin(uTime * (0.5 + aPhase * 0.8) + aPhase * 40.0);',
+        '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+        '  gl_Position = projectionMatrix * mv;',
+        '  gl_PointSize = aSize * uScale;',
+        '}'
+      ].join('\n'),
+      fragmentShader: [
+        'varying vec3 vColor; varying float vA;',
+        'void main(){',
+        '  float d = length(gl_PointCoord - 0.5);',
+        '  float a = 1.0 - smoothstep(0.0, 0.5, d);',
+        '  a = a * a * vA;',
+        '  gl_FragColor = vec4(vColor * a, 1.0);',
+        '}'
+      ].join('\n'),
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
+    });
+    return { points: new THREE.Points(g, mat), mat: mat };
+  }
+
+  function diskMaterial() {
+    return new THREE.ShaderMaterial({
+      uniforms: { uTime: { value: 0 }, uBright: { value: 1 } },
+      vertexShader: 'varying vec2 vL;\nvoid main(){ vL = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+      fragmentShader: [
+        'uniform float uTime; uniform float uBright; varying vec2 vL;',
+        'void main(){',
+        '  float r = length(vL);',
+        '  float t = clamp((r - 1.0) / 1.8, 0.0, 1.0);',
+        '  float ang = atan(vL.y, vL.x);',
+        '  float streak = 0.55 + 0.45 * sin(ang * 6.0 - t * 14.0 + uTime * 3.0);',
+        '  float m = smoothstep(0.0, 0.06, t) * (1.0 - smoothstep(0.55, 1.0, t));',
+        '  vec3 c = mix(vec3(1.0, 0.93, 0.75), vec3(1.0, 0.5, 0.15), smoothstep(0.0, 0.35, t));',
+        '  c = mix(c, vec3(0.6, 0.12, 0.04), smoothstep(0.35, 1.0, t));',
+        '  gl_FragColor = vec4(c * m * streak * uBright, 1.0);',
+        '}'
+      ].join('\n'),
+      transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+    });
+  }
+
+  function rimMaterial() {
+    return new THREE.ShaderMaterial({
+      uniforms: { uGain: { value: 1.2 } },
+      vertexShader: 'varying float vF;\nvoid main(){ vF = normalize(normalMatrix * normal).z; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+      fragmentShader: 'uniform float uGain; varying float vF;\nvoid main(){ float rim = pow(1.0 - clamp(vF, 0.0, 1.0), 2.2); gl_FragColor = vec4(vec3(1.0, 0.55, 0.2) * rim * uGain, 1.0); }',
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
+    });
+  }
+
+  function stub() {
+    var noop = function () {};
+    return { update: noop, resize: noop, setPaused: noop, dispose: noop };
+  }
+
+  function create(containerEl) {
+    if (!containerEl || typeof THREE === 'undefined') return stub();
+    var renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+    } catch (err) {
+      return stub();
+    }
+    var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    var gain = reduce ? 0.5 : 1;
+
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setClearColor(0x03040a, 1);
+    var canvas = renderer.domElement;
+    canvas.style.display = 'block';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.touchAction = 'none';
+    canvas.style.cursor = 'grab';
+    containerEl.appendChild(canvas);
+
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(42, 1, 0.1, 300);
+    var target = new THREE.Vector3(0, TARGET_Y, 0);
+    var theta = 0.5, phi = 0.8, radius = 12;
+    var glowTex = glowTexture();
+
+    var stars = buildStars();
+    scene.add(stars.points);
+
+    var haze = additiveSprite(glowTex, 0x4a2a8a, 0.22);
+    haze.position.set(0, -5, -45);
+    haze.scale.set(70, 45, 1);
+    scene.add(haze);
+
+    // Malla espacio-tiempo (líneas con color por vértice).
+    var S = GRID_N + 1, NV = S * S;
+    var gX = new Float32Array(NV), gZ = new Float32Array(NV), gFade = new Float32Array(NV);
+    var gPos = new Float32Array(NV * 3), gCol = new Float32Array(NV * 3);
+    var j, i, q;
+    for (j = 0; j < S; j++) {
+      for (i = 0; i < S; i++) {
+        q = j * S + i;
+        var gx = -GRID_R + 2 * GRID_R * i / GRID_N, gz = -GRID_R + 2 * GRID_R * j / GRID_N;
+        gX[q] = gx; gZ[q] = gz;
+        gPos[q * 3] = gx; gPos[q * 3 + 1] = BASE_Y; gPos[q * 3 + 2] = gz;
+        gFade[q] = 1 - smooth(4.2, GRID_R, Math.sqrt(gx * gx + gz * gz));
+      }
+    }
+    var idx = new Uint16Array(4 * S * GRID_N), n = 0, a;
+    for (j = 0; j < S; j++) {
+      for (i = 0; i < GRID_N; i++) { a = j * S + i; idx[n++] = a; idx[n++] = a + 1; }
+    }
+    for (j = 0; j < GRID_N; j++) {
+      for (i = 0; i < S; i++) { a = j * S + i; idx[n++] = a; idx[n++] = a + S; }
+    }
+    var gGeo = new THREE.BufferGeometry();
+    var gPosAttr = new THREE.BufferAttribute(gPos, 3);
+    var gColAttr = new THREE.BufferAttribute(gCol, 3);
+    gPosAttr.setUsage(THREE.DynamicDrawUsage);
+    gColAttr.setUsage(THREE.DynamicDrawUsage);
+    gGeo.setAttribute('position', gPosAttr);
+    gGeo.setAttribute('color', gColAttr);
+    gGeo.setIndex(new THREE.BufferAttribute(idx, 1));
+    var grid = new THREE.LineSegments(gGeo, new THREE.LineBasicMaterial({
+      vertexColors: true, transparent: true, opacity: 0.6,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    }));
+    grid.frustumCulled = false;
+    scene.add(grid);
+
+    // Agujeros negros: esfera negra, borde fresnel naranja, disco y halo.
+    var sphereGeo = new THREE.SphereGeometry(1, 40, 28);
+    var diskGeo = new THREE.RingGeometry(1.0, 2.8, 128, 1);
+    function makeBH() {
+      var grp = new THREE.Group();
+      var sphere = new THREE.Mesh(sphereGeo, new THREE.MeshBasicMaterial({ color: 0x000000 }));
+      var rimMat = rimMaterial();
+      var rim = new THREE.Mesh(sphereGeo, rimMat);
+      var dmat = diskMaterial();
+      var disk = new THREE.Mesh(diskGeo, dmat);
+      disk.rotation.x = -Math.PI / 2;
+      var glow = additiveSprite(glowTex, 0xff8a3c, 0.3);
+      grp.add(glow, sphere, rim, disk);
+      scene.add(grp);
+      return { grp: grp, sphere: sphere, rim: rim, rimMat: rimMat, disk: disk, dmat: dmat, glow: glow };
+    }
+    var bh1 = makeBH(), bh2 = makeBH();
+
+    // Anillos de onda emitidos en cada ciclo GW.
+    var ringGeo = new THREE.RingGeometry(0.97, 1, 160, 1);
+    var ringMesh = [], ringMat = [], ringAge = [];
+    for (i = 0; i < RING_POOL; i++) {
+      var rm = new THREE.MeshBasicMaterial({
+        color: 0x33e6ff, transparent: true, opacity: 0, side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending, depthWrite: false
+      });
+      var mesh = new THREE.Mesh(ringGeo, rm);
+      mesh.rotation.x = -Math.PI / 2;
+      mesh.visible = false;
+      scene.add(mesh);
+      ringMesh.push(mesh); ringMat.push(rm); ringAge.push(-1);
+    }
+
+    // Flash de fusión y resplandor del remanente.
+    var flashSpriteMat = new THREE.SpriteMaterial({
+      map: glowTex, color: 0xfff0c8, transparent: true, opacity: 0,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    var flashSprite = new THREE.Sprite(flashSpriteMat);
+    scene.add(flashSprite);
+    var flashRingMat = additiveMat(0xfff2d0, 0);
+    var flashRing = new THREE.Mesh(ringGeo, flashRingMat);
+    flashRing.rotation.x = -Math.PI / 2;
+    scene.add(flashRing);
+    var remGlow = additiveSprite(glowTex, 0xffb060, 0);
+    scene.add(remGlow);
+
+    // Estado recibido de frames.
+    var mass1 = 36, mass2 = 29, fPhase = 0, fPhase2 = 0, fSep = 0, fF = 20;
+    var fMerged = false, fAfter = 0, fHMag = 0;
+    var wasMerged = false, lastCyc = 0, pendingSpawn = false, lastSpawnT = -1e9;
+    var flashT = 0, blend = 0, ampCur = 0.2, ampTarget = 0.2;
+    var simT = 0, paused = false, last = 0, raf = 0, disposed = false;
+    var p1x = 0, p1z = 0, p2x = 0, p2z = 0, KW1 = 0, KW2 = 0;
+
+    function wellAt(x, z) {
+      var d1 = x - p1x, e1 = z - p1z, d2 = x - p2x, e2 = z - p2z;
+      return KW1 / Math.sqrt(d1 * d1 + e1 * e1 + S2) + KW2 / Math.sqrt(d2 * d2 + e2 * e2 + S2);
+    }
+
+    function setBH(bh, x, z, r, visible, glowOp) {
+      var y = BASE_Y - wellAt(x, z) + r * 0.9;
+      bh.grp.position.set(x, y, z);
+      bh.grp.visible = visible;
+      bh.sphere.scale.setScalar(r);
+      bh.rim.scale.setScalar(r * 1.03);
+      bh.disk.scale.setScalar(r);
+      bh.glow.scale.set(r * 7, r * 7, 1);
+      bh.glow.material.opacity = glowOp;
+      bh.rimMat.uniforms.uGain.value = 1.1 * gain + 0.3 * flashT;
+      bh.dmat.uniforms.uBright.value = (1.2 - 0.5 * blend) * (reduce ? 0.7 : 1);
+      bh.dmat.uniforms.uTime.value = simT;
+    }
+
+    function spawnRing() {
+      var idx2 = 0, oldest = -1, i2;
+      for (i2 = 0; i2 < RING_POOL; i2++) {
+        if (ringAge[i2] < 0) { idx2 = i2; oldest = -2; break; }
+        if (ringAge[i2] > oldest) { oldest = ringAge[i2]; idx2 = i2; }
+      }
+      ringAge[idx2] = 0;
+      ringMesh[idx2].visible = true;
+    }
+
+    function update(frame, state) {
+      if (!frame) return;
+      if (state && state.m1 > 0) mass1 = state.m1;
+      if (state && state.m2 > 0) mass2 = state.m2;
+      fPhase = frame.phase || 0;
+      fPhase2 = frame.phase2 || 0;
+      fSep = frame.sepKm || 0;
+      fF = frame.f || 20;
+      fMerged = !!frame.merged;
+      fHMag = Math.abs(frame.hPlus || 0) + Math.abs(frame.hCross || 0);
+      fAfter = Math.max(0, -(frame.tToMerge || 0));
+      if (fMerged && !wasMerged) flashT = 1;
+      wasMerged = fMerged;
+      var cyc = Math.floor(fPhase2 / TAU);
+      if (cyc < lastCyc) lastCyc = cyc;
+      else if (cyc > lastCyc) {
+        lastCyc = cyc;
+        if (!fMerged && (!reduce || cyc % 2 === 0)) pendingSpawn = true;
+      }
+    }
+
+    function animate(dt, now) {
+      var dtS = paused ? 0 : dt;
+      simT += dtS;
+
+      if (!reduce && ptrs.size === 0 && now - lastInteract > 4000) theta += 0.06 * dt;
+      var cr = radius * Math.sin(phi);
+      camera.position.set(cr * Math.sin(theta), TARGET_Y + radius * Math.cos(phi), cr * Math.cos(theta));
+      camera.lookAt(target);
+
+      blend += ((fMerged ? 1 : 0) - blend) * Math.min(1, dtS * 2.5);
+
+      var M = mass1 + mass2, w1 = mass1 / M, w2 = mass2 / M;
+      var r1 = rBH(mass1), r2 = rBH(mass2), rRem = rBH(M * 0.95);
+      var u = clamp((Math.log10(fSep + 10) - 1.6) / 1.8, 0, 1);
+      var sep = Math.max(0.5 + 3.0 * smooth(0, 1, u), (r1 + r2) * 1.08);
+      var c = Math.cos(fPhase), s = Math.sin(fPhase);
+      var k = 1 - blend;
+      var a1 = sep * w2 * k, a2 = sep * w1 * k;
+      p1x = -a1 * c; p1z = -a1 * s;
+      p2x = a2 * c; p2z = a2 * s;
+      KW1 = WELL_K * w1; KW2 = WELL_K * w2;
+
+      var ringAmp = fMerged ? Math.exp(-fAfter * 1.2) : 0;
+      var rr1 = lerp(r1, rRem, blend), rr2 = lerp(r2, rRem, blend);
+      var glowBase = 0.3 + 0.25 * ringAmp;
+      setBH(bh1, p1x, p1z, rr1, true, glowBase);
+      setBH(bh2, p2x, p2z, rr2, blend < 0.92, glowBase * (1 - blend * 0.5));
+
+      // Malla: pozo gravitacional + ondas viajeras.
+      var hAmp = clamp((Math.log10(fHMag + 1e-30) + 24) / 4.5, 0, 1);
+      ampTarget = (0.1 + 0.3 * hAmp) * gain;
+      ampCur += (ampTarget - ampCur) * Math.min(1, dtS * 6);
+      var amp = ampCur * (1 - 0.7 * blend);
+      var kW = 3.2 + 0.03 * clamp(fF, 10, 400);
+      var ph = fPhase2;
+      var ringS = ringAmp * gain;
+      var colCyan = C_CYAN, colViolet = C_VIOLET;
+      for (q = 0; q < NV; q++) {
+        var x = gX[q], z = gZ[q];
+        var rad = Math.sqrt(x * x + z * z);
+        var fd = gFade[q];
+        var rip = Math.sin(kW * rad - ph) / (1 + 0.22 * rad);
+        var rg = ringS * Math.sin(9.0 * rad - simT * 13.0) * Math.exp(-rad * 0.35);
+        var disp = (rip * amp + rg * 0.5) * fd;
+        var y = BASE_Y - wellAt(x, z) + disp;
+        gPos[q * 3 + 1] = y;
+        var depth = clamp((BASE_Y - y) * 0.7, 0, 1);
+        var br = (0.3 + 0.5 * depth + Math.abs(disp) * 2.5) * (0.25 + 0.75 * fd);
+        br = clamp(br, 0, 1);
+        gCol[q * 3] = lerp(colCyan[0], colViolet[0], depth) * br;
+        gCol[q * 3 + 1] = lerp(colCyan[1], colViolet[1], depth) * br;
+        gCol[q * 3 + 2] = lerp(colCyan[2], colViolet[2], depth) * br;
+      }
+      gPosAttr.needsUpdate = true;
+      gColAttr.needsUpdate = true;
+
+      if (pendingSpawn && simT - lastSpawnT >= (reduce ? 0.45 : 0.2)) {
+        spawnRing();
+        lastSpawnT = simT;
+        pendingSpawn = false;
+      }
+      var ringAlpha = reduce ? 0.45 : 0.7;
+      for (var ri = 0; ri < RING_POOL; ri++) {
+        if (ringAge[ri] < 0) continue;
+        ringAge[ri] += dtS;
+        var age = ringAge[ri];
+        if (age > RING_LIFE) {
+          ringAge[ri] = -1;
+          ringMesh[ri].visible = false;
+          continue;
+        }
+        var t = age / RING_LIFE;
+        var rs = 0.6 + age * RING_SPEED;
+        ringMesh[ri].scale.set(rs, rs, 1);
+        ringMat[ri].opacity = Math.pow(1 - t, 1.6) * ringAlpha;
+        ringMat[ri].color.setRGB(lerp(C_CYAN[0], C_VIOLET[0], t), lerp(C_CYAN[1], C_VIOLET[1], t), lerp(C_CYAN[2], C_VIOLET[2], t));
+      }
+
+      flashT = Math.max(0, flashT - dtS * 0.8);
+      var fe = 1 - flashT;
+      flashSprite.scale.set(1 + 12 * fe, 1 + 12 * fe, 1);
+      flashSpriteMat.opacity = Math.pow(flashT, 1.5) * 0.95 * gain;
+      flashRing.scale.set(0.5 + 9 * Math.pow(fe, 0.6), 0.5 + 9 * Math.pow(fe, 0.6), 1);
+      flashRingMat.opacity = flashT * 0.9 * gain;
+
+      remGlow.scale.set(2 + 4 * ringAmp + blend, 2 + 4 * ringAmp + blend, 1);
+      remGlow.material.opacity = blend * (0.25 + 0.5 * ringAmp) * (0.85 + 0.15 * Math.sin(simT * 9)) * gain;
+
+      stars.mat.uniforms.uTime.value = simT;
+    }
+
+    // Órbita: arrastre, pinza y rueda.
+    var ptrs = new Map();
+    var lastInteract = -1e9, pinch0 = 0, radius0 = 0;
+    function pinchDist() {
+      var it = ptrs.values();
+      var pa = it.next().value, pb = it.next().value;
+      return Math.hypot(pa.x - pb.x, pa.y - pb.y);
+    }
+    function onDown(e) {
+      ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* sin captura */ }
+      if (ptrs.size === 2) { pinch0 = pinchDist(); radius0 = radius; }
+      lastInteract = performance.now();
+      canvas.style.cursor = 'grabbing';
+    }
+    function onMove(e) {
+      var p = ptrs.get(e.pointerId);
+      if (!p) return;
+      var dx = e.clientX - p.x, dy = e.clientY - p.y;
+      p.x = e.clientX; p.y = e.clientY;
+      if (ptrs.size === 1) {
+        theta -= dx * 0.008;
+        phi = clamp(phi + dy * 0.006, 0.2, 1.5);
+      } else if (ptrs.size >= 2 && pinch0 > 0) {
+        radius = clamp(radius0 * pinch0 / Math.max(1, pinchDist()), 5, 30);
+      }
+      lastInteract = performance.now();
+    }
+    function onUp(e) {
+      ptrs.delete(e.pointerId);
+      if (ptrs.size < 2) pinch0 = 0;
+      if (ptrs.size === 0) canvas.style.cursor = 'grab';
+    }
+    function onWheel(e) {
+      e.preventDefault();
+      radius = clamp(radius * Math.exp(e.deltaY * 0.0012), 5, 30);
+      lastInteract = performance.now();
+    }
+    canvas.addEventListener('pointerdown', onDown);
+    canvas.addEventListener('pointermove', onMove);
+    canvas.addEventListener('pointerup', onUp);
+    canvas.addEventListener('pointercancel', onUp);
+    canvas.addEventListener('pointerleave', onUp);
+    canvas.addEventListener('wheel', onWheel, { passive: false });
+
+    function resize() {
+      if (disposed) return;
+      var w = Math.max(1, containerEl.clientWidth), h = Math.max(1, containerEl.clientHeight);
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      stars.mat.uniforms.uScale.value = renderer.getPixelRatio() * Math.max(h, 400) / 700;
+    }
+
+    function loop(now) {
+      if (disposed) return;
+      raf = requestAnimationFrame(loop);
+      var dt = last ? Math.min(0.05, (now - last) / 1000) : 0.016;
+      last = now;
+      animate(dt, now);
+      renderer.render(scene, camera);
+    }
+
+    var ro = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(function () { resize(); });
+      ro.observe(containerEl);
+    } else {
+      window.addEventListener('resize', resize);
+    }
+    resize();
+    raf = requestAnimationFrame(loop);
+
+    return {
+      update: update,
+      resize: resize,
+      setPaused: function (b) { paused = !!b; },
+      dispose: function () {
+        disposed = true;
+        cancelAnimationFrame(raf);
+        if (ro) ro.disconnect(); else window.removeEventListener('resize', resize);
+        canvas.removeEventListener('pointerdown', onDown);
+        canvas.removeEventListener('pointermove', onMove);
+        canvas.removeEventListener('pointerup', onUp);
+        canvas.removeEventListener('pointercancel', onUp);
+        canvas.removeEventListener('pointerleave', onUp);
+        canvas.removeEventListener('wheel', onWheel);
+        renderer.dispose();
+        if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+      }
+    };
+  }
+
+  LIGO.universe3d = { create: create };
+})();
+
+(function () {
+  'use strict';
+
+  var LIGO = window.LIGO || (window.LIGO = {});
+
+  var ARM_M = 4000;
+  var L0 = 3.0;
+  var GAIN = 1.6;
+  var MAX_DEF = 0.08;
+  var LASER_D = 1.8;
+  var DIODE_D = 1.5;
+  var TUBE_R = 0.11;
+  var BEAM_R = 0.03;
+  var MIRROR_R = 0.42;
+  var RED = 0xff5a3c;
+  var ORANGE = 0xffa040;
+  var STEEL = 0x4a6b8a;
+  var TUBE = 0x5a7fa6;
+  var HP = Math.PI / 2;
+  var LBL_W = 512;
+  var LBL_H = 128;
+  var SCALE = 2;
+  var FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+  var SUP = ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹'];
+  var GROUP_COUNT = [6, 10, 10, 6];
+  var GROUP_RATE = [0.7, 0.35, 0.35, 0.7];
+
+  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+
+  function sup(n) {
+    return String(n).split('').map(function (ch) {
+      return ch === '-' ? '⁻' : SUP[+ch];
+    }).join('');
+  }
+
+  function expLabel(ex) {
+    if (!(ex > 1)) return '×1';
+    return '×10' + sup(Math.round(Math.log10(ex)));
+  }
+
+  function fmtReal(x) {
+    if (LIGO.physics && LIGO.physics.formatSI) return LIGO.physics.formatSI(x, 'm');
+    return x.toExponential(1) + ' m';
+  }
+
+  function glowTexture() {
+    var c = document.createElement('canvas');
+    c.width = 128;
+    c.height = 128;
+    var g = c.getContext('2d');
+    var grd = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    grd.addColorStop(0, 'rgba(255,255,255,1)');
+    grd.addColorStop(0.25, 'rgba(255,255,255,0.5)');
+    grd.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = grd;
+    g.fillRect(0, 0, 128, 128);
+    return new THREE.CanvasTexture(c);
+  }
+
+  function pill(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function createLabel(H) {
+    var canvas = document.createElement('canvas');
+    canvas.width = LBL_W * SCALE;
+    canvas.height = LBL_H * SCALE;
+    var ctx = canvas.getContext('2d');
+    var tex = new THREE.CanvasTexture(canvas);
+    tex.minFilter = THREE.LinearFilter;
+    tex.generateMipmaps = false;
+    var sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: tex, transparent: true, depthTest: false, depthWrite: false
+    }));
+    sprite.scale.set(H * LBL_W / LBL_H, H, 1);
+    sprite.renderOrder = 10;
+    var lastKey = '';
+
+    function paint(lines) {
+      var key = lines.map(function (l) { return l.text + '|' + l.color; }).join('\n');
+      if (key === lastKey) return;
+      lastKey = key;
+      ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
+      ctx.clearRect(0, 0, LBL_W, LBL_H);
+      var n = lines.length;
+      var lineH = 52;
+      var fonts = [];
+      var maxW = 0;
+      for (var i = 0; i < n; i++) {
+        var fs = i === 0 ? 44 : 38;
+        ctx.font = '600 ' + fs + 'px ' + FONT;
+        var w = ctx.measureText(lines[i].text).width;
+        if (w > LBL_W - 48) {
+          fs = fs * (LBL_W - 48) / w;
+          ctx.font = '600 ' + fs + 'px ' + FONT;
+          w = LBL_W - 48;
+        }
+        fonts.push('600 ' + fs + 'px ' + FONT);
+        if (w > maxW) maxW = w;
+      }
+      var boxW = Math.min(LBL_W - 8, maxW + 40);
+      var boxH = n * lineH + 16;
+      var bx = (LBL_W - boxW) / 2;
+      var by = (LBL_H - boxH) / 2;
+      pill(ctx, bx, by, boxW, boxH, boxH / 2);
+      ctx.fillStyle = 'rgba(7,11,22,0.74)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(120,165,230,0.45)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (var j = 0; j < n; j++) {
+        ctx.font = fonts[j];
+        ctx.fillStyle = lines[j].color;
+        ctx.fillText(lines[j].text, LBL_W / 2, by + 8 + lineH * (j + 0.5));
+      }
+      tex.needsUpdate = true;
+    }
+
+    return { sprite: sprite, paint: paint };
+  }
+
+  function create(containerEl) {
+    var renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    } catch (err) {
+      containerEl.textContent = 'WebGL no disponible en este navegador.';
+      return { update: function () {}, resize: function () {} };
+    }
+    renderer.setClearColor(0x000000, 0);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    var canvas = renderer.domElement;
+    canvas.style.display = 'block';
+    canvas.style.touchAction = 'none';
+    canvas.style.cursor = 'grab';
+    canvas.setAttribute('role', 'img');
+    canvas.setAttribute('aria-label', 'Interferómetro de Michelson en L con láser, divisor de haz, dos espejos de 40 kg y fotodiodo');
+    containerEl.appendChild(canvas);
+
+    var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+
+    scene.add(new THREE.AmbientLight(0x6f86b0, 0.6));
+    var sun = new THREE.DirectionalLight(0xdfe9ff, 0.9);
+    sun.position.set(3, 6, 4);
+    scene.add(sun);
+    var laserLight = new THREE.PointLight(RED, 0.8, 4);
+    laserLight.position.set(-LASER_D + 0.3, 0.4, 0);
+    scene.add(laserLight);
+
+    var glow = glowTexture();
+
+    var grid = new THREE.GridHelper(20, 40, 0x2b4a7a, 0x14233d);
+    grid.position.y = -0.85;
+    grid.material.transparent = true;
+    grid.material.opacity = 0.55;
+    grid.material.depthWrite = false;
+    scene.add(grid);
+
+    var floorGlow = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.MeshBasicMaterial({
+      map: glow, color: 0x1d3a6e, transparent: true, opacity: 0.6,
+      depthWrite: false, blending: THREE.AdditiveBlending
+    }));
+    floorGlow.rotation.x = -HP;
+    floorGlow.position.y = -0.86;
+    scene.add(floorGlow);
+
+    var steelMat = new THREE.MeshStandardMaterial({ color: STEEL, metalness: 0.7, roughness: 0.35 });
+    var darkMat = new THREE.MeshStandardMaterial({ color: 0x26364d, metalness: 0.5, roughness: 0.5 });
+    var mirrorMat = new THREE.MeshStandardMaterial({ color: 0xdde9f5, metalness: 1, roughness: 0.06 });
+    var tubeMat = new THREE.MeshStandardMaterial({
+      color: TUBE, metalness: 0.3, roughness: 0.5, transparent: true, opacity: 0.2, depthWrite: false
+    });
+    var beamMat = new THREE.MeshBasicMaterial({ color: RED });
+    var outMat = new THREE.MeshBasicMaterial({ color: RED, transparent: true, opacity: 0.4, depthWrite: false });
+    var bsMat = new THREE.MeshStandardMaterial({
+      color: 0xa8dcff, metalness: 0.1, roughness: 0.05, transparent: true, opacity: 0.45, depthWrite: false
+    });
+    var diodeMat = new THREE.MeshStandardMaterial({
+      color: 0x2a3a50, emissive: ORANGE, emissiveIntensity: 0, metalness: 0.3, roughness: 0.4
+    });
+    var barMat = new THREE.MeshBasicMaterial({ color: 0xffb347 });
+    var ghostMat = new THREE.MeshBasicMaterial({
+      color: 0x7fa3d6, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false
+    });
+
+    var tubeGeo = new THREE.CylinderGeometry(TUBE_R, TUBE_R, 1, 20, 1, true);
+    tubeGeo.translate(0, 0.5, 0);
+    var beamGeo = new THREE.CylinderGeometry(BEAM_R, BEAM_R, 1, 10);
+    beamGeo.translate(0, 0.5, 0);
+
+    function orient(mesh, dir) {
+      if (dir === '+x') mesh.rotation.z = -HP;
+      else if (dir === '-x') mesh.rotation.z = HP;
+      else if (dir === '+z') mesh.rotation.x = HP;
+      else mesh.rotation.x = -HP;
+    }
+
+    function seg(geo, mat, dir, x, y, z, len) {
+      var m = new THREE.Mesh(geo, mat);
+      orient(m, dir);
+      m.position.set(x, y, z);
+      m.scale.y = len;
+      scene.add(m);
+      return m;
+    }
+
+    function addMesh(geo, mat, x, y, z) {
+      var m = new THREE.Mesh(geo, mat);
+      m.position.set(x, y, z);
+      scene.add(m);
+      return m;
+    }
+
+    addMesh(new THREE.BoxGeometry(0.6, 0.6, 0.05), bsMat, 0, 0, 0).rotation.y = -Math.PI / 4;
+
+    var laserBody = addMesh(new THREE.CylinderGeometry(0.16, 0.16, 0.5, 20), darkMat, -LASER_D, 0, 0);
+    laserBody.rotation.z = HP;
+    seg(beamGeo, beamMat, '+x', -LASER_D + 0.3, 0, 0, LASER_D - 0.3);
+
+    var tubeX = seg(tubeGeo, tubeMat, '+x', 0, 0, 0, L0);
+    var tubeY = seg(tubeGeo, tubeMat, '+z', 0, 0, 0, L0);
+    var beamX = seg(beamGeo, beamMat, '+x', 0, 0, 0, L0);
+    var beamY = seg(beamGeo, beamMat, '+z', 0, 0, 0, L0);
+
+    var mirrorDiscGeo = new THREE.CylinderGeometry(MIRROR_R, MIRROR_R, 0.12, 36);
+
+    var mirrorX = new THREE.Group();
+    var discX = new THREE.Mesh(mirrorDiscGeo, mirrorMat);
+    discX.rotation.z = HP;
+    mirrorX.add(discX);
+    var mountX = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.9, 0.9), darkMat);
+    mountX.position.x = 0.25;
+    mirrorX.add(mountX);
+    mirrorX.position.set(L0, 0, 0);
+    scene.add(mirrorX);
+
+    var mirrorY = new THREE.Group();
+    var discY = new THREE.Mesh(mirrorDiscGeo, mirrorMat);
+    discY.rotation.x = HP;
+    mirrorY.add(discY);
+    var mountY = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.3), darkMat);
+    mountY.position.z = 0.25;
+    mirrorY.add(mountY);
+    mirrorY.position.set(0, 0, L0);
+    scene.add(mirrorY);
+
+    var ringX = addMesh(new THREE.RingGeometry(MIRROR_R + 0.04, MIRROR_R + 0.1, 48), ghostMat, L0, 0, 0);
+    ringX.rotation.y = HP;
+    addMesh(new THREE.RingGeometry(MIRROR_R + 0.04, MIRROR_R + 0.1, 48), ghostMat, 0, 0, L0);
+
+    var barX = addMesh(new THREE.BoxGeometry(1, 0.04, 0.04), barMat, L0, 0.75, 0);
+    var barY = addMesh(new THREE.BoxGeometry(0.04, 0.04, 1), barMat, 0, 0.75, L0);
+
+    var diode = addMesh(new THREE.CylinderGeometry(0.2, 0.2, 0.3, 24), diodeMat, 0, 0, -DIODE_D);
+    diode.rotation.x = HP;
+    var diodeGlow = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: glow, color: ORANGE, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending
+    }));
+    diodeGlow.position.set(0, 0, -DIODE_D + 0.3);
+    scene.add(diodeGlow);
+    var outBeam = seg(beamGeo, outMat, '-z', 0, 0, 0, DIODE_D - 0.15);
+
+    var laserGlow = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: glow, color: RED, transparent: true, opacity: 0.6, depthWrite: false, blending: THREE.AdditiveBlending
+    }));
+    laserGlow.position.set(-LASER_D + 0.3, 0, 0);
+    laserGlow.scale.set(0.7, 0.7, 1);
+    scene.add(laserGlow);
+
+    var packetCount = 0;
+    GROUP_COUNT.forEach(function (c) { packetCount += c; });
+    var packetPos = new Float32Array(packetCount * 3);
+    var packetPhase = new Float32Array(packetCount);
+    var packetGroup = new Uint8Array(packetCount);
+    var pi = 0;
+    for (var g = 0; g < GROUP_COUNT.length; g++) {
+      for (var k = 0; k < GROUP_COUNT[g]; k++) {
+        packetPhase[pi] = (k + 0.5) / GROUP_COUNT[g];
+        packetGroup[pi] = g;
+        pi++;
+      }
+    }
+    var packetGeo = new THREE.BufferGeometry();
+    packetGeo.setAttribute('position', new THREE.BufferAttribute(packetPos, 3));
+    var packets = new THREE.Points(packetGeo, new THREE.PointsMaterial({
+      map: glow, color: RED, size: 0.18, transparent: true, depthWrite: false,
+      blending: THREE.AdditiveBlending, sizeAttenuation: true
+    }));
+    packets.frustumCulled = false;
+    scene.add(packets);
+
+    var lblLaser = createLabel(0.6);
+    lblLaser.sprite.position.set(-LASER_D - 0.2, 0.9, 0.6);
+    lblLaser.paint([{ text: 'Láser 1064 nm', color: '#ffb09a' }]);
+    scene.add(lblLaser.sprite);
+
+    var lblBS = createLabel(0.6);
+    lblBS.sprite.position.set(-1.0, 0.85, -0.6);
+    lblBS.paint([{ text: 'Divisor de haz', color: '#cfe6ff' }]);
+    scene.add(lblBS.sprite);
+
+    var lblDiode = createLabel(0.6);
+    lblDiode.sprite.position.set(0.9, 0.5, -DIODE_D - 0.2);
+    lblDiode.paint([{ text: 'Fotodiodo', color: '#ffd29a' }]);
+    scene.add(lblDiode.sprite);
+
+    var lblMirX = createLabel(0.6);
+    lblMirX.paint([{ text: 'Espejo 40 kg', color: '#cfe6ff' }]);
+    scene.add(lblMirX.sprite);
+
+    var lblMirY = createLabel(0.6);
+    lblMirY.paint([{ text: 'Espejo 40 kg', color: '#cfe6ff' }]);
+    scene.add(lblMirY.sprite);
+
+    var lblArmX = createLabel(0.5);
+    lblArmX.sprite.position.set(L0 / 2, -0.5, -0.5);
+    lblArmX.paint([{ text: 'Brazo X · 4 km', color: '#9fb6d8' }]);
+    scene.add(lblArmX.sprite);
+
+    var lblArmY = createLabel(0.5);
+    lblArmY.sprite.position.set(-1.0, -0.5, L0 / 2);
+    lblArmY.paint([{ text: 'Brazo Y · 4 km', color: '#9fb6d8' }]);
+    scene.add(lblArmY.sprite);
+
+    var lblRead = createLabel(0.75);
+    lblRead.sprite.position.set(2.3, 1.1, -1.6);
+    scene.add(lblRead.sprite);
+
+    var target = new THREE.Vector3(0.5, 0, 0.7);
+    var theta = 0.45;
+    var phi = 0.9;
+    var radius = 9.2;
+    var pts = new Map();
+    var pinchD = 0;
+    var idle = 0;
+
+    function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+
+    canvas.addEventListener('pointerdown', function (e) {
+      try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* sin captura */ }
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      canvas.style.cursor = 'grabbing';
+      pinchD = 0;
+      idle = 0;
+    });
+    canvas.addEventListener('pointermove', function (e) {
+      var p = pts.get(e.pointerId);
+      if (!p) return;
+      if (pts.size === 1) {
+        theta -= (e.clientX - p.x) * 0.006;
+        phi = clamp(phi - (e.clientY - p.y) * 0.005, 0.2, 1.45);
+        p.x = e.clientX;
+        p.y = e.clientY;
+      } else {
+        p.x = e.clientX;
+        p.y = e.clientY;
+        var it = pts.values();
+        var a = it.next().value;
+        var b = it.next().value;
+        if (a && b) {
+          var d = dist(a, b);
+          if (pinchD > 0 && d > 0) radius = clamp(radius * pinchD / d, 4.5, 18);
+          pinchD = d;
+        }
+      }
+    });
+    function endPointer(e) {
+      pts.delete(e.pointerId);
+      pinchD = 0;
+      if (pts.size === 0) canvas.style.cursor = 'grab';
+    }
+    canvas.addEventListener('pointerup', endPointer);
+    canvas.addEventListener('pointercancel', endPointer);
+    canvas.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      idle = 0;
+      radius = clamp(radius * Math.exp(e.deltaY * 0.0015), 4.5, 18);
+    }, { passive: false });
+
+    var frame = null;
+    var st = null;
+    var clock = 0;
+    var last = 0;
+    var lastLabel = 0;
+    var smoothI = 0.5;
+    var visible = true;
+    var sizeW = 0;
+    var sizeH = 0;
+
+    function resize() {
+      var w = containerEl.clientWidth || 640;
+      var h = containerEl.clientHeight || 400;
+      sizeW = w;
+      sizeH = h;
+      renderer.setSize(w, h);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+
+    function readoutLines() {
+      var realistic = !!(st && st.realistic);
+      var ex = st ? +st.exag : 1;
+      var head = realistic
+        ? { text: 'Escala real (sin exagerar)', color: '#cfe6ff' }
+        : { text: 'Exagerado ' + expLabel(ex) + ' (visual)', color: '#ffc49a' };
+      var dl = frame && isFinite(frame.dL) ? fmtReal(frame.dL) : '—';
+      return [head, { text: 'ΔL real = ' + dl, color: '#e8f1ff' }];
+    }
+
+    function loop(now) {
+      requestAnimationFrame(loop);
+      var dt = last ? Math.min((now - last) / 1000, 0.05) : 0;
+      last = now;
+      if (!visible || sizeW === 0) return;
+
+      var speed = st && isFinite(st.speed) ? st.speed : 1;
+      if (!st || st.playing !== false) clock += dt * speed * (reduced ? 0.35 : 1);
+
+      var dLV = frame && isFinite(frame.dLVisual) ? frame.dLVisual : 0;
+      var s = clamp((dLV / ARM_M) * GAIN, -MAX_DEF, MAX_DEF);
+      var armX = L0 * (1 + s);
+      var armY = L0 * (1 - s);
+
+      tubeX.scale.y = armX;
+      beamX.scale.y = armX;
+      tubeY.scale.y = armY;
+      beamY.scale.y = armY;
+      mirrorX.position.x = armX;
+      mirrorY.position.z = armY;
+      lblMirX.sprite.position.set(armX, 0.95, 0);
+      lblMirY.sprite.position.set(0, 0.95, armY);
+
+      var dX = armX - L0;
+      var dY = armY - L0;
+      barX.visible = Math.abs(dX) > 0.004;
+      barX.position.x = L0 + dX / 2;
+      barX.scale.x = Math.max(Math.abs(dX), 1e-4);
+      barY.visible = Math.abs(dY) > 0.004;
+      barY.position.z = L0 + dY / 2;
+      barY.scale.z = Math.max(Math.abs(dY), 1e-4);
+
+      var I = frame && isFinite(frame.intensity) ? clamp(frame.intensity, 0, 1) : 0;
+      smoothI += (I - smoothI) * 0.3;
+      diodeMat.emissiveIntensity = 0.05 + 1.4 * smoothI;
+      diodeGlow.material.opacity = 0.08 + 0.9 * smoothI;
+      diodeGlow.scale.set(0.5 + 0.7 * smoothI, 0.5 + 0.7 * smoothI, 1);
+      outMat.opacity = 0.15 + 0.85 * smoothI;
+      laserGlow.material.opacity = 0.55 + 0.2 * Math.sin(clock * 5);
+
+      for (var i = 0; i < packetCount; i++) {
+        var sp = packetPhase[i] + clock * GROUP_RATE[packetGroup[i]];
+        sp -= Math.floor(sp);
+        var grp = packetGroup[i];
+        var x = 0, y = 0, z = 0;
+        if (grp === 0) {
+          x = (-LASER_D + 0.3) * (1 - sp);
+        } else if (grp === 1 || grp === 2) {
+          var d = sp < 0.5 ? 2 * sp : 2 - 2 * sp;
+          if (grp === 1) x = d * armX;
+          else z = d * armY;
+        } else {
+          z = -sp * (DIODE_D - 0.2);
+        }
+        packetPos[i * 3] = x;
+        packetPos[i * 3 + 1] = y;
+        packetPos[i * 3 + 2] = z;
+      }
+      packetGeo.attributes.position.needsUpdate = true;
+
+      if (now - lastLabel > 150) {
+        lastLabel = now;
+        lblRead.paint(readoutLines());
+      }
+
+      if (!reduced && !pts.size) {
+        idle += dt;
+        if (idle > 4) theta += dt * 0.04;
+      }
+      camera.position.set(
+        target.x + radius * Math.sin(phi) * Math.sin(theta),
+        target.y + radius * Math.cos(phi),
+        target.z + radius * Math.sin(phi) * Math.cos(theta)
+      );
+      camera.lookAt(target);
+
+      renderer.render(scene, camera);
+    }
+
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    resize();
+    if ('ResizeObserver' in window) {
+      new ResizeObserver(function () { resize(); }).observe(containerEl);
+    } else {
+      window.addEventListener('resize', resize);
+    }
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) {
+        visible = entries[entries.length - 1].isIntersecting;
+      }).observe(containerEl);
+    }
+    requestAnimationFrame(loop);
+
+    return {
+      update: function (f, state) {
+        frame = f;
+        st = state;
+      },
+      resize: resize
+    };
+  }
+
+  LIGO.detector3d = { create: create };
+})();
+
+/* LIGO.charts: gráficas en Canvas 2D (strain, espectrograma, franjas + osciloscopio). */
+(function () {
+  'use strict';
+
+  var LIGO = (window.LIGO = window.LIGO || {});
+  var U = 1e-21;            // unidad del eje de strain
+  var WIN = 512;            // ventana STFT: 0.25 s a 2048 Hz
+  var NT = 480, NF = 200;   // espectrograma: columnas × filas (escala log)
+  var F_MIN = 20, F_MAX = 500;
+  var FREQ_TICKS = [20, 50, 100, 200, 500];
+  var SCOPE_S = 4;          // ventana del osciloscopio (s de simulación)
+  var RING_K = 60;          // fase radial: ~9.5 anillos hasta el borde
+  var TRACK_KEYS = ['preset', 'm1', 'm2', 'distMpc', 'incl'];
+  var M = { l: 54, r: 14, t: 18, b: 28 };
+  var FALLBACK = {
+    ink: '#07080f', ink2: '#11142a', line: '#2a2f4a', text: '#e8e9f3',
+    muted: '#8b90ad', laser: '#ff5a3c', wave: '#5ce1e6', wave2: '#a78bfa', warm: '#ffb347'
+  };
+
+  var C = {};
+  var fontStr = '11px sans-serif';
+  var probeCtx = null;
+  var inited = false, colorsDirty = true, trackDirty = true, rafId = 0;
+  var track = null, trackId = 0, dur = 1, dt = 1 / 2048, n = 0, tMerge = null;
+  var strainLim = 1, strainStep = 0.5, timeStep = 1;
+  var spectroCv = null;
+  var strainEnv = null, envKey = '';
+  var lastFrame = null, hist = [];
+  var charts = {};
+  var ring = null;
+
+  /* Tablas: FFT, ventana de Hann y paleta cálida (negro→violeta→naranja→blanco). */
+  var cosT = new Float64Array(WIN / 2), sinT = new Float64Array(WIN / 2);
+  var revT = new Uint16Array(WIN), hann = new Float64Array(WIN);
+  var LUT = new Uint8ClampedArray(256 * 3);
+  (function tables() {
+    var i, b, r, x, bits = Math.round(Math.log2(WIN));
+    for (i = 0; i < WIN / 2; i++) {
+      cosT[i] = Math.cos(2 * Math.PI * i / WIN);
+      sinT[i] = Math.sin(2 * Math.PI * i / WIN);
+    }
+    for (i = 0; i < WIN; i++) {
+      r = 0; x = i;
+      for (b = 0; b < bits; b++) { r = (r << 1) | (x & 1); x >>= 1; }
+      revT[i] = r;
+      hann[i] = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / WIN);
+    }
+    var stops = [[0, [0, 0, 0]], [0.35, [88, 28, 140]], [0.7, [255, 120, 30]], [1, [255, 250, 235]]];
+    for (i = 0; i < 256; i++) {
+      var u = i / 255, s = 0;
+      while (s < stops.length - 2 && u > stops[s + 1][0]) s++;
+      var a = stops[s], z = stops[s + 1], k = (u - a[0]) / (z[0] - a[0]);
+      for (b = 0; b < 3; b++) LUT[i * 3 + b] = a[1][b] + (z[1][b] - a[1][b]) * k;
+    }
+  })();
+
+  /* Utilidades */
+  function num(v) { return typeof v === 'number' && isFinite(v) ? v : 0; }
+  function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+  function rgba(c, a) { return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')'; }
+
+  function niceStep(x) {
+    x = Math.max(x, 1e-30);
+    var p = Math.pow(10, Math.floor(Math.log10(x))), m = x / p;
+    return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p;
+  }
+  function ticks(a, b, step) {
+    var out = [], k0 = Math.ceil(a / step - 1e-9), k1 = Math.floor(b / step + 1e-9), k;
+    for (k = k0; k <= k1; k++) out.push(k * step);
+    return out;
+  }
+  function fmt(v, step) {
+    if (Math.abs(v) < step * 1e-9) v = 0;
+    var d = step >= 1 ? 0 : Math.min(4, Math.ceil(-Math.log10(step) - 1e-9));
+    return v.toFixed(d).replace(/-/g, '−');
+  }
+  function fmtPhi(x) {
+    if (x === 0) return '0';
+    if (Math.abs(x) >= 1e3 || Math.abs(x) < 1e-2) return x.toExponential(2).replace(/-/g, '−').replace('+', '');
+    return x.toFixed(2).replace(/-/g, '−');
+  }
+  function touches(datos, keys) {
+    if (datos == null) return true;
+    var list = Array.isArray(datos) ? datos : (typeof datos === 'object' ? Object.keys(datos) : [String(datos)]);
+    return list.some(function (k) { return keys.indexOf(k) !== -1; });
+  }
+  function curT() {
+    var t = lastFrame ? num(lastFrame.t) : 0;
+    return clamp(t, 0, dur);
+  }
+  function idxAt(t) {
+    return Math.min(n - 1, Math.max(0, Math.round(t / dt)));
+  }
+
+  /* Colores desde variables CSS (convertidas a RGB con un canvas auxiliar). */
+  function toRGB(css, fb) {
+    if (!probeCtx) probeCtx = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+    probeCtx.fillStyle = fb;
+    probeCtx.fillStyle = css;
+    probeCtx.fillRect(0, 0, 1, 1);
+    var d = probeCtx.getImageData(0, 0, 1, 1).data;
+    return [d[0], d[1], d[2]];
+  }
+  function readColors() {
+    var cs = getComputedStyle(document.documentElement);
+    Object.keys(FALLBACK).forEach(function (k) {
+      var v = (cs.getPropertyValue('--' + k) || '').trim();
+      C[k] = toRGB(v || FALLBACK[k], FALLBACK[k]);
+    });
+  }
+
+  /* Lienzos: tamaño físico = CSS × devicePixelRatio. */
+  function makeChart(id, label) {
+    var cv = document.getElementById(id);
+    if (!cv || !cv.getContext) return null;
+    cv.setAttribute('role', 'img');
+    cv.setAttribute('aria-label', label);
+    return { cv: cv, ctx: cv.getContext('2d'), w: 0, h: 0, dpr: 1 };
+  }
+  function sizeChart(ch) {
+    var dpr = window.devicePixelRatio || 1;
+    var w = ch.cv.clientWidth, h = ch.cv.clientHeight;
+    if (!w || !h) return false;
+    if (w !== ch.w || h !== ch.h || dpr !== ch.dpr) {
+      ch.w = w; ch.h = h; ch.dpr = dpr;
+      ch.cv.width = Math.round(w * dpr);
+      ch.cv.height = Math.round(h * dpr);
+    }
+    ch.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return true;
+  }
+  function requestDraw() {
+    if (!rafId) rafId = window.requestAnimationFrame(drawAll);
+  }
+
+  /* Pista: strain completo, espectrograma precalculado y escalas. */
+  function buildSpectro(h, dtv) {
+    var fs = 1 / dtv, half = WIN / 2, len = h.length;
+    var re = new Float64Array(WIN), im = new Float64Array(WIN), pw = new Float64Array(half + 1);
+    var vals = new Float64Array(NT * NF), pmax = 0, c, k, r;
+    for (c = 0; c < NT; c++) {
+      var center = Math.round(c * (len - 1) / (NT - 1));
+      for (k = 0; k < WIN; k++) {
+        var idx = center - half + k;
+        re[k] = idx >= 0 && idx < len ? h[idx] / U * hann[k] : 0;
+        im[k] = 0;
+      }
+      fft(re, im);
+      for (k = 0; k <= half; k++) pw[k] = re[k] * re[k] + im[k] * im[k];
+      for (r = 0; r < NF; r++) {
+        var f = F_MIN * Math.pow(F_MAX / F_MIN, r / (NF - 1));
+        var b = f * WIN / fs, k0 = Math.floor(b), fr = b - k0;
+        var p = pw[k0] * (1 - fr) + pw[Math.min(k0 + 1, half)] * fr;
+        vals[c * NF + r] = p;
+        if (p > pmax) pmax = p;
+      }
+    }
+    pmax = pmax || 1;
+    var cv = document.createElement('canvas');
+    cv.width = NT; cv.height = NF;
+    var cx = cv.getContext('2d'), img = cx.createImageData(NT, NF), d = img.data;
+    for (c = 0; c < NT; c++) {
+      for (r = 0; r < NF; r++) {
+        var db = 10 * Math.log10(vals[c * NF + r] / pmax + 1e-12);
+        var li = Math.round(clamp((db + 45) / 45, 0, 1) * 255);
+        var o = ((NF - 1 - r) * NT + c) * 4;
+        d[o] = LUT[li * 3]; d[o + 1] = LUT[li * 3 + 1]; d[o + 2] = LUT[li * 3 + 2]; d[o + 3] = 255;
+      }
+    }
+    cx.putImageData(img, 0, 0);
+    return cv;
+  }
+  function fft(re, im) {
+    var i, j, k, len, half, step, a, b, wr, wi, tr, ti, tmp;
+    for (i = 0; i < WIN; i++) {
+      j = revT[i];
+      if (j > i) {
+        tmp = re[i]; re[i] = re[j]; re[j] = tmp;
+        tmp = im[i]; im[i] = im[j]; im[j] = tmp;
+      }
+    }
+    for (len = 2; len <= WIN; len <<= 1) {
+      half = len >> 1; step = WIN / len;
+      for (i = 0; i < WIN; i += len) {
+        for (k = 0; k < half; k++) {
+          wr = cosT[k * step]; wi = -sinT[k * step];
+          a = i + k; b = a + half;
+          tr = re[b] * wr - im[b] * wi; ti = re[b] * wi + im[b] * wr;
+          re[b] = re[a] - tr; im[b] = im[a] - ti;
+          re[a] += tr; im[a] += ti;
+        }
+      }
+    }
+  }
+  /* Envolvente min/máx por píxel (honesta: no pierde picos al submuestrear). */
+  function buildEnv(h, w) {
+    var mn = new Float32Array(w), mx = new Float32Array(w), len = h.length;
+    for (var x = 0; x < w; x++) {
+      var i0 = Math.floor(x * len / w), i1 = Math.max(i0 + 1, Math.floor((x + 1) * len / w));
+      var lo = Infinity, hi = -Infinity;
+      for (var i = i0; i < i1 && i < len; i++) {
+        var v = h[i] / U;
+        if (v < lo) lo = v;
+        if (v > hi) hi = v;
+      }
+      mn[x] = lo === Infinity ? 0 : lo;
+      mx[x] = hi === -Infinity ? 0 : hi;
+    }
+    return { mn: mn, mx: mx };
+  }
+  function rebuild() {
+    trackDirty = false;
+    var LP = LIGO.physics;
+    if (!LP || typeof LP.buildTrack !== 'function' || !LIGO.state) return;
+    var tr = LP.buildTrack(LIGO.state);
+    var h = tr.hPlus;
+    n = h.length;
+    dt = tr.dt > 0 ? tr.dt : 1 / 2048;
+    dur = tr.duration > 0 ? tr.duration : Math.max(1e-9, (n - 1) * dt);
+    tMerge = typeof tr.tMerge === 'number' && isFinite(tr.tMerge) ? tr.tMerge : null;
+    var maxAbs = 0, i;
+    for (i = 0; i < n; i++) {
+      var a = Math.abs(h[i]);
+      if (a > maxAbs) maxAbs = a;
+    }
+    var rawLim = (maxAbs / U || 1) * 1.12;
+    strainStep = niceStep(rawLim / 3);
+    strainLim = Math.ceil(rawLim / strainStep - 1e-9) * strainStep;
+    timeStep = niceStep(dur / 6);
+    spectroCv = buildSpectro(h, dt);
+    track = tr;
+    trackId++;
+    envKey = '';
+  }
+
+  /* Ejes compartidos por las gráficas temporales. */
+  function timeAxis(x, L, T, pw, ph, alpha) {
+    x.font = fontStr; x.textAlign = 'center'; x.textBaseline = 'top';
+    ticks(0, dur, timeStep).forEach(function (tt) {
+      var px = L + tt / dur * pw;
+      x.strokeStyle = rgba(C.line, alpha); x.lineWidth = 1;
+      x.beginPath(); x.moveTo(Math.round(px) + 0.5, T); x.lineTo(Math.round(px) + 0.5, T + ph); x.stroke();
+      x.fillStyle = rgba(C.muted, 1);
+      x.fillText(fmt(tt, timeStep), px, T + ph + 6);
+    });
+  }
+  function frameBox(x, L, T, pw, ph) {
+    x.strokeStyle = rgba(C.line, 0.9); x.lineWidth = 1;
+    x.strokeRect(L + 0.5, T + 0.5, pw, ph);
+  }
+  function topLabels(x, L, R, left, right, y) {
+    x.font = fontStr; x.textBaseline = 'top';
+    x.fillStyle = rgba(C.muted, 1);
+    x.textAlign = 'left'; x.fillText(left, L, y);
+    x.textAlign = 'right'; x.fillText(right, R, y);
+  }
+  function cursorLine(x, px, T, ph) {
+    x.strokeStyle = rgba(C.text, 0.6); x.lineWidth = 1;
+    x.beginPath(); x.moveTo(px + 0.5, T); x.lineTo(px + 0.5, T + ph); x.stroke();
+  }
+  function dot(x, px, py, color, r) {
+    x.save();
+    x.shadowColor = rgba(color, 0.9); x.shadowBlur = 10;
+    x.fillStyle = rgba(C.text, 1);
+    x.beginPath(); x.arc(px, py, r, 0, Math.PI * 2); x.fill();
+    x.restore();
+  }
+
+  /* 1) Strain h(t) */
+  function drawStrain(ch) {
+    if (!ch || !track || !sizeChart(ch)) return;
+    var x = ch.ctx, W = ch.w, H = ch.h, L = M.l, T = M.t;
+    var pw = W - L - M.r, ph = H - T - M.b;
+    x.clearRect(0, 0, W, H);
+    if (pw < 20 || ph < 20) return;
+    var h = track.hPlus;
+    var key = trackId + ':' + pw;
+    if (envKey !== key) { strainEnv = buildEnv(h, pw); envKey = key; }
+    var t = curT();
+    var X = function (tt) { return L + tt / dur * pw; };
+    var Y = function (v) { return T + (1 - (v + strainLim) / (2 * strainLim)) * ph; };
+
+    x.font = fontStr;
+    x.textAlign = 'right'; x.textBaseline = 'middle';
+    ticks(-strainLim, strainLim, strainStep).forEach(function (v) {
+      var y = Math.round(Y(v)) + 0.5;
+      x.strokeStyle = v === 0 ? rgba(C.muted, 0.6) : rgba(C.line, 0.55);
+      x.beginPath(); x.moveTo(L, y); x.lineTo(L + pw, y); x.stroke();
+      x.fillStyle = rgba(C.muted, 1);
+      x.fillText(fmt(v, strainStep), L - 8, y);
+    });
+    timeAxis(x, L, T, pw, ph, 0.45);
+    frameBox(x, L, T, pw, ph);
+
+    var strokeEnv = function (a, b) {
+      x.beginPath();
+      for (var c = a; c <= b; c++) {
+        var px = L + c + 0.5;
+        x.moveTo(px, Y(strainEnv.mx[c]));
+        x.lineTo(px, Y(strainEnv.mn[c]));
+      }
+      x.stroke();
+    };
+    var cut = Math.round(clamp(t / dur, 0, 1) * (pw - 1));
+    x.lineWidth = 1;
+    x.strokeStyle = rgba(C.wave, 0.28); strokeEnv(0, pw - 1);
+    x.strokeStyle = rgba(C.wave, 0.95); strokeEnv(0, cut);
+
+    if (tMerge !== null && tMerge >= 0 && tMerge <= dur) {
+      var mx = X(tMerge) + 0.5;
+      x.setLineDash([4, 4]);
+      x.strokeStyle = rgba(C.warm, 0.9);
+      x.beginPath(); x.moveTo(mx, T); x.lineTo(mx, T + ph); x.stroke();
+      x.setLineDash([]);
+      x.font = fontStr; x.textAlign = 'right'; x.textBaseline = 'top';
+      x.fillStyle = rgba(C.warm, 1);
+      x.fillText('fusión', mx - 5, T + 4);
+    }
+
+    var px = X(t);
+    cursorLine(x, px, T, ph);
+    dot(x, px, Y(h[idxAt(t)] / U), C.laser, 3.5);
+
+    topLabels(x, L, L + pw, 'h × 10⁻²¹ (real)', 't (s)', 3);
+  }
+
+  /* 2) Espectrograma tiempo-frecuencia */
+  function drawSpectro(ch) {
+    if (!ch || !track || !spectroCv || !sizeChart(ch)) return;
+    var x = ch.ctx, W = ch.w, H = ch.h, L = M.l, T = M.t;
+    var pw = W - L - M.r, ph = H - T - M.b;
+    x.clearRect(0, 0, W, H);
+    if (pw < 20 || ph < 20) return;
+    var Yf = function (f) {
+      return T + (1 - Math.log(clamp(f, F_MIN, F_MAX) / F_MIN) / Math.log(F_MAX / F_MIN)) * ph;
+    };
+    x.imageSmoothingEnabled = true;
+    x.imageSmoothingQuality = 'high';
+    x.drawImage(spectroCv, L, T, pw, ph);
+
+    x.font = fontStr; x.textAlign = 'right'; x.textBaseline = 'middle';
+    FREQ_TICKS.forEach(function (f) {
+      var y = Math.round(Yf(f)) + 0.5;
+      x.strokeStyle = rgba(C.line, 0.7); x.lineWidth = 1;
+      x.beginPath(); x.moveTo(L, y); x.lineTo(L + pw, y); x.stroke();
+      x.fillStyle = rgba(C.muted, 1);
+      x.fillText(String(f), L - 8, y);
+    });
+    timeAxis(x, L, T, pw, ph, 0.25);
+    frameBox(x, L, T, pw, ph);
+
+    var t = curT(), px = L + clamp(t / dur, 0, 1) * pw;
+    cursorLine(x, px, T, ph);
+    var fNow = track.f[idxAt(t)];
+    dot(x, px, Yf(num(fNow)), C.text, 3);
+    topLabels(x, L, L + pw, 'f (Hz)', 't (s)', 3);
+  }
+
+  /* 3) Franjas circulares + osciloscopio de intensidad */
+  function ensureRing(S) {
+    if (ring && ring.S === S) return ring;
+    var cv = document.createElement('canvas');
+    cv.width = S; cv.height = S;
+    var cx = cv.getContext('2d'), img = cx.createImageData(S, S), d = img.data;
+    var cosA = new Float32Array(S * S), sinA = new Float32Array(S * S), inside = new Uint8Array(S * S);
+    var R = S / 2;
+    for (var py = 0; py < S; py++) {
+      for (var px = 0; px < S; px++) {
+        var p = py * S + px;
+        var dx = (px + 0.5 - R) / R, dy = (py + 0.5 - R) / R, r2 = dx * dx + dy * dy;
+        if (r2 > 1) continue;
+        var ph = RING_K * r2;
+        cosA[p] = Math.cos(ph); sinA[p] = Math.sin(ph);
+        inside[p] = 1; d[p * 4 + 3] = 255;
+      }
+    }
+    ring = { S: S, cv: cv, ctx: cx, img: img, cosA: cosA, sinA: sinA, inside: inside };
+    return ring;
+  }
+  function drawFringe(ch) {
+    if (!ch || !sizeChart(ch)) return;
+    var x = ch.ctx, W = ch.w, H = ch.h, dpr = ch.dpr;
+    x.clearRect(0, 0, W, H);
+    var dP = lastFrame ? num(lastFrame.dPhi) : 0;
+    var I = lastFrame ? clamp(num(lastFrame.intensity), 0, 1) : 0;
+
+    /* Anillos: I(r) = ½(1 − cos(Δφ + k·r²)); en el centro coincide con frame.intensity. */
+    var Hr = Math.floor(H * 0.6);
+    var cx = W / 2, cy = Hr / 2, R = Math.min(W / 2, Hr / 2) - 6;
+    if (R > 10) {
+      var rc = ensureRing(Math.max(8, Math.round(2 * R * dpr)));
+      var cD = Math.cos(dP), sD = Math.sin(dP);
+      var d = rc.img.data, A = rc.cosA, B = rc.sinA, ink = C.ink, la = C.laser;
+      var total = rc.S * rc.S;
+      for (var p = 0, o = 0; p < total; p++, o += 4) {
+        if (!rc.inside[p]) continue;
+        var k = 0.5 * (1 - (cD * A[p] - sD * B[p]));
+        d[o] = ink[0] + (la[0] - ink[0]) * k;
+        d[o + 1] = ink[1] + (la[1] - ink[1]) * k;
+        d[o + 2] = ink[2] + (la[2] - ink[2]) * k;
+      }
+      rc.ctx.putImageData(rc.img, 0, 0);
+      x.drawImage(rc.cv, cx - R, cy - R, 2 * R, 2 * R);
+      x.strokeStyle = rgba(C.line, 0.9); x.lineWidth = 1;
+      x.beginPath(); x.arc(cx, cy, R, 0, Math.PI * 2); x.stroke();
+    }
+    x.font = fontStr; x.fillStyle = rgba(C.muted, 1);
+    x.textBaseline = 'top'; x.textAlign = 'left';
+    x.fillText('Δφ = ' + fmtPhi(dP) + ' rad', 6, 4);
+    x.textAlign = 'right';
+    x.fillText('I = ' + I.toFixed(2), W - 6, 4);
+
+    /* Osciloscopio: últimos SCOPE_S s de simulación; el cursor queda a la derecha. */
+    var L = 38, Rr = 12, T = Hr + 16, Bm = 22;
+    var pw = W - L - Rr, ph = H - T - Bm;
+    if (pw < 20 || ph < 10) return;
+    var tc = curT(), t0 = tc - SCOPE_S;
+    var X = function (tt) { return L + (tt - t0) / SCOPE_S * pw; };
+    var Y = function (v) { return T + (1 - v) * ph; };
+    x.textBaseline = 'middle'; x.textAlign = 'right';
+    [0, 0.5, 1].forEach(function (v) {
+      var y = Math.round(Y(v)) + 0.5;
+      x.strokeStyle = rgba(C.line, 0.55); x.lineWidth = 1;
+      x.beginPath(); x.moveTo(L, y); x.lineTo(L + pw, y); x.stroke();
+      x.fillStyle = rgba(C.muted, 1);
+      x.fillText(fmt(v, 0.5), L - 6, y);
+    });
+    x.textBaseline = 'top'; x.textAlign = 'center';
+    for (var s = 0; s <= SCOPE_S; s++) {
+      var gx = Math.round(X(t0 + s)) + 0.5;
+      x.strokeStyle = rgba(C.line, 0.45);
+      x.beginPath(); x.moveTo(gx, T); x.lineTo(gx, T + ph); x.stroke();
+      x.fillStyle = rgba(C.muted, 1);
+      x.fillText(fmt(s - SCOPE_S, 1), gx, T + ph + 6);
+    }
+    frameBox(x, L, T, pw, ph);
+
+    x.beginPath();
+    var started = false;
+    for (var i = 0; i < hist.length; i++) {
+      if (hist[i].t < t0) continue;
+      var px = X(hist[i].t), py = Y(hist[i].v);
+      if (started) x.lineTo(px, py); else { x.moveTo(px, py); started = true; }
+    }
+    x.strokeStyle = rgba(C.wave, 0.95); x.lineWidth = 1.5;
+    x.shadowColor = rgba(C.wave, 0.6); x.shadowBlur = 6;
+    x.stroke();
+    x.shadowBlur = 0;
+    if (started) dot(x, X(tc), Y(I), C.wave, 3);
+
+    topLabels(x, L, L + pw, 'intensidad', 't rel. (s)', T - 14);
+    x.textBaseline = 'top';
+  }
+
+  /* Bucle de dibujo: se agrupa en un solo rAF por ráfaga de eventos. */
+  function drawAll() {
+    rafId = 0;
+    if (colorsDirty) { readColors(); colorsDirty = false; }
+    if (trackDirty) rebuild();
+    drawStrain(charts.strain);
+    drawSpectro(charts.spectro);
+    drawFringe(charts.fringe);
+  }
+
+  /* Eventos del bus */
+  function onFrame(f) {
+    if (!f) return;
+    lastFrame = f;
+    var t = num(f.t);
+    var last = hist.length ? hist[hist.length - 1].t : -Infinity;
+    if (t < last) { hist.length = 0; last = -Infinity; }
+    if (t > last) hist.push({ t: t, v: clamp(num(f.intensity), 0, 1) });
+    var cut = t - SCOPE_S - 0.5;
+    while (hist.length && hist[0].t < cut) hist.shift();
+    requestDraw();
+  }
+  function onState(datos) {
+    if (touches(datos, TRACK_KEYS)) trackDirty = true;
+    requestDraw();
+  }
+  function onReset() {
+    lastFrame = null;
+    hist.length = 0;
+    requestDraw();
+  }
+
+  function init() {
+    if (inited) return;
+    inited = true;
+    charts.strain = makeChart('chart-strain', 'Deformación h(t) de la onda gravitacional con el cursor en el tiempo actual');
+    charts.spectro = makeChart('chart-spectro', 'Espectrograma tiempo-frecuencia del chirp');
+    charts.fringe = makeChart('chart-fringe', 'Franjas de interferencia del fotodiodo y señal temporal de intensidad');
+    var ff = getComputedStyle(document.body).fontFamily;
+    fontStr = '11px ' + (ff || 'sans-serif');
+    readColors();
+
+    var list = [charts.strain, charts.spectro, charts.fringe].filter(Boolean);
+    if (typeof ResizeObserver === 'function') {
+      var ro = new ResizeObserver(function () { colorsDirty = true; requestDraw(); });
+      list.forEach(function (ch) { ro.observe(ch.cv); });
+    } else {
+      window.addEventListener('resize', function () { colorsDirty = true; requestDraw(); });
+    }
+
+    if (LIGO.bus) {
+      LIGO.bus.on('frame', onFrame);
+      LIGO.bus.on('state', onState);
+      LIGO.bus.on('reset', onReset);
+    }
+    trackDirty = true;
+    requestDraw();
+  }
+
+  LIGO.charts = { init: init };
+})();
+
+/* LIGO.ui: controles, lecturas en vivo, escala, tour, quiz, glosario, lecciones y audio. */
+(function () {
+  'use strict';
+  var LIGO = (window.LIGO = window.LIGO || {});
+
+  var SUP = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+  var EXAG_STEPS = [1, 1e10, 1e15, 1e20, 1e21];
+  var EXAG_LABELS = ['×1', '×10¹⁰', '×10¹⁵', '×10²⁰', '×10²¹'];
+  var ARM = 4000;
+  var PROTON = 1.7e-15;
+  var LOG_MIN = -19;
+  var LOG_MAX = 4;
+  var READ_MS = 66;
+
+  var FALLBACK_PRESETS = [
+    { id: 'GW150914', name: 'GW150914', m1: 36, m2: 29, distMpc: 410, desc: 'Primera detección: 36 y 29 M☉ a 410 Mpc' },
+    { id: 'GW170817', name: 'GW170817', m1: 1.46, m2: 1.27, distMpc: 40, desc: 'Estrellas de neutrones a 40 Mpc' }
+  ];
+
+  var MISSIONS = [
+    {
+      title: 'La onda estira el espacio',
+      body: 'La binaria gira y se acerca. Cada ciclo emite una onda gravitacional que ondula la malla del espacio-tiempo. No empuja la materia como una fuerza: es el propio espacio el que cambia de tamaño.',
+      reto: 'Observa la malla: ¿cada cuánto se repite la ondulación?',
+      spot: ['universe'],
+      set: { preset: 'GW150914', m1: 36, m2: 29, distMpc: 410, incl: 0, exag: 1e20, realistic: false, playing: true }
+    },
+    {
+      title: 'Más masa, otra frecuencia',
+      body: 'La frecuencia de la onda sube durante la espiral y llega a su máximo en la fusión, donde f ≈ 4400 / M_total Hz. Más masa total significa una fusión a frecuencia más baja.',
+      reto: 'Sube m1 hasta 60 y observa f y el tiempo hasta la fusión.',
+      spot: ['readouts'],
+      set: { preset: 'GW150914', m1: 36, m2: 29, distMpc: 410, playing: true }
+    },
+    {
+      title: 'El interferómetro: dos brazos y franjas',
+      body: 'La luz del láser se divide, recorre dos brazos perpendiculares de 4 km y vuelve a juntarse. Si la onda cambia la longitud de los brazos, cambia la diferencia de fase Δφ = 4π(L_x − L_y)/λ, y con ella el patrón de franjas.',
+      reto: 'Con exageración ×10²⁰, mira cómo se mueven las franjas y el fotodiodo.',
+      spot: ['detector', 'chart-fringe'],
+      set: { exag: 1e20, realistic: false, incl: 0, playing: true }
+    },
+    {
+      title: 'La señal real es minúscula',
+      body: 'Con el valor real, ΔL ≈ 10⁻¹⁸ m, unas mil veces menos que un protón. Por eso LIGO necesita cavidades Fabry-Pérot, espejos de 40 kg y aislamiento sísmico.',
+      reto: 'Activa «Valor realista» y compara la barra de escala con el protón.',
+      spot: ['scale'],
+      set: { realistic: true, playing: true }
+    },
+    {
+      title: 'Escucha y mira el chirp',
+      body: 'En el espectrograma la frecuencia sube como un gorjeo (chirp). Esa subida depende sobre todo de la masa de chirp, Mc = (m1·m2)^{3/5} / (m1+m2)^{1/5}.',
+      reto: 'Pulsa «Escuchar el chirp» y pon la velocidad en 0.5×.',
+      spot: ['chart-spectro'],
+      set: { realistic: false, exag: 1e20, speed: 0.5, playing: true }
+    },
+    {
+      title: 'Distancia e inclinación',
+      body: 'La amplitud cae como 1/distancia: al doblar la distancia, h se reduce a la mitad. La inclinación cambia la polarización: a 90° (de canto) h× desaparece y h₊ baja a la mitad.',
+      reto: 'Pon la inclinación en 90° y la distancia en 820 Mpc. Compara h.',
+      spot: ['controls'],
+      set: { preset: 'GW150914', m1: 36, m2: 29, distMpc: 410, incl: 0, speed: 1, playing: true }
+    }
+  ];
+
+  var QUIZ = [
+    {
+      q: '¿Qué es lo que estira y comprime una onda gravitacional?',
+      opts: ['El aire que rodea al detector', 'El propio espacio-tiempo', 'La luz del láser', 'La Tierra'],
+      ans: 1,
+      ok: 'Correcto. La onda cambia la distancia entre puntos del propio espacio-tiempo, y por eso cambia la longitud de los brazos.',
+      bad: 'No. La onda no empuja el aire ni la Tierra: cambia la geometría del espacio-tiempo.'
+    },
+    {
+      q: 'Si ambos brazos cambian su longitud exactamente igual, ¿qué ve el fotodiodo?',
+      opts: ['Una señal enorme', 'Nada: Δφ = 0 porque la diferencia es cero', 'El chirp completo', 'La frecuencia del láser cambia'],
+      ans: 1,
+      ok: 'Exacto. El interferómetro mide ΔL_x − ΔL_y. Un cambio igual en ambos brazos no produce señal.',
+      bad: 'No. El detector mide la diferencia entre brazos; si los dos cambian igual, la diferencia de fase es cero.'
+    },
+    {
+      q: '¿Qué orden de magnitud tiene ΔL para GW150914 (h ≈ 10⁻²¹, L = 4 km)?',
+      opts: ['1 m', '10⁻³ m (un milímetro)', '10⁻¹⁸ m', '4000 m'],
+      ans: 2,
+      ok: 'Sí: ΔL ≈ hL/2 ≈ 10⁻¹⁸ m, unas mil veces menor que un protón.',
+      bad: 'Revisa la escala: con h ≈ 10⁻²¹ y L = 4 km, el cambio es del orden de 10⁻¹⁸ m.'
+    },
+    {
+      q: 'Si subes la masa de la binaria, ¿qué pasa con la frecuencia a la que ocurre la fusión?',
+      opts: ['Sube', 'Baja', 'No cambia', 'Se hace cero'],
+      ans: 1,
+      ok: 'Correcto: f_ISCO ≈ 4400 / M_total Hz. Más masa, fusión a frecuencia más baja.',
+      bad: 'Piensa en f_ISCO ≈ 4400 / M_total Hz: si M_total crece, f baja.'
+    },
+    {
+      q: 'En LIGO se opera en «franja oscura». ¿Qué significa?',
+      opts: [
+        'Sin onda casi no llega luz al fotodiodo, y la onda lo ilumina',
+        'Sin onda el fotodiodo está saturado de luz',
+        'El láser se apaga en el vacío',
+        'Los espejos son negros para no reflejar'
+      ],
+      ans: 0,
+      ok: 'Así es. Una señal pequeña aparece como un aumento de luz sobre un fondo oscuro, lo que da mucha sensibilidad.',
+      bad: 'Piensa en el punto de operación: sin onda, los haces se cancelan y casi no llega luz.'
+    }
+  ];
+
+  var TERMS = [
+    { t: 'Strain (deformación h)', d: 'h = ΔL/L: fracción en que la onda cambia la longitud. Es adimensional y en LIGO es del orden de 10⁻²¹.' },
+    { t: 'Chirp', d: 'Gorjeo: la frecuencia y la amplitud suben juntas mientras la binaria se acerca. Suena como un piar que se agudiza.' },
+    { t: 'Interferómetro', d: 'Dos haces de luz recorren brazos perpendiculares y se recombinan. Si las longitudes cambian, cambia el patrón de franjas.' },
+    { t: 'Fabry-Pérot', d: 'Cavidad: la luz rebota muchas veces entre dos espejos dentro del brazo. En LIGO da unas 280 vueltas, así que el camino efectivo es de unos 1100 km.' },
+    { t: 'Polarización', d: 'La onda deforma el espacio en dos patrones: «+» (ejes X e Y) y «×» (rotado 45°). El detector ve una mezcla según la orientación de la fuente.' },
+    { t: 'Masa de chirp (Mc)', d: 'Mc = (m1·m2)^{3/5} / (m1+m2)^{1/5}. Es la combinación de masas que más controla la frecuencia del chirp.' },
+    { t: 'SNR (relación señal-ruido)', d: 'Cuántas veces la señal supera al ruido. Para aceptar una detección se exige un SNR alto; el umbral típico es ≈ 8.' }
+  ];
+
+  var LESSONS = [
+    'Una onda gravitacional cambia la longitud de los brazos (h = ΔL/L). LIGO mide esa diferencia con luz láser y un interferómetro de Michelson.',
+    'El ΔL real es del orden de 10⁻¹⁸ m, unas mil veces menor que un protón. Por eso usa cavidades Fabry-Pérot, espejos de 40 kg y aislamiento sísmico.',
+    'El chirp revela la masa de chirp, la distancia y el tipo de fuente: agujeros negros frente a estrellas de neutrones.'
+  ];
+
+  var ctl = null;
+  var ro = null;
+  var sc = null;
+  var lastRead = 0;
+  var lastDL = 0;
+  var aud = { ctx: null, osc: null, gain: null, on: false };
+
+  function $(id) { return document.getElementById(id); }
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined && text !== null) n.textContent = text;
+    return n;
+  }
+
+  function sup(n) {
+    return String(n).replace(/[-0-9]/g, function (c) { return SUP[c]; });
+  }
+
+  function fmtNum(v) {
+    return Number.isInteger(v) ? String(v) : v.toFixed(2);
+  }
+
+  function fallbackSI(x, unit) {
+    var u = unit ? ' ' + unit : '';
+    if (!isFinite(x)) return '—';
+    if (x === 0) return '0' + u;
+    var a = Math.abs(x);
+    if (a >= 1e-2 && a < 1e4) return String(Number(x.toPrecision(3))) + u;
+    var e = Math.floor(Math.log10(a));
+    return (x / Math.pow(10, e)).toFixed(1) + '×10' + sup(e) + u;
+  }
+
+  function fmtSI(x, unit) {
+    var p = LIGO.physics;
+    if (p && typeof p.formatSI === 'function') {
+      try {
+        var s = p.formatSI(x, unit);
+        if (typeof s === 'string' && s.length) return s.trim();
+      } catch (e) { /* usa el respaldo */ }
+    }
+    return fallbackSI(x, unit);
+  }
+
+  function chirpMassOf(m1, m2) {
+    var p = LIGO.physics;
+    if (p && typeof p.chirpMass === 'function') {
+      try {
+        var v = p.chirpMass(m1, m2);
+        if (typeof v === 'number' && isFinite(v)) return v;
+      } catch (e) { /* usa el respaldo */ }
+    }
+    return Math.pow(m1 * m2, 0.6) / Math.pow(m1 + m2, 0.2);
+  }
+
+  function presetList() {
+    var p = LIGO.physics;
+    return p && Array.isArray(p.PRESETS) && p.PRESETS.length ? p.PRESETS : FALLBACK_PRESETS;
+  }
+
+  function findPreset(id) {
+    var list = presetList();
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    return null;
+  }
+
+  function exagIndex(exag) {
+    if (!(exag > 0)) return 0;
+    var best = 0, bd = Infinity, lx = Math.log10(exag);
+    for (var i = 0; i < EXAG_STEPS.length; i++) {
+      var d = Math.abs(lx - Math.log10(EXAG_STEPS[i]));
+      if (d < bd) { bd = d; best = i; }
+    }
+    return best;
+  }
+
+  function logPct(x) {
+    return ((Math.log10(x) - LOG_MIN) / (LOG_MAX - LOG_MIN)) * 100;
+  }
+
+  /* Controles */
+
+  var RANGES = [
+    {
+      id: 'm1', label: 'Masa 1', min: 1, max: 120, step: 1,
+      hint: 'Qué pasa si la subo: la señal es más fuerte y la fusión ocurre a frecuencia más baja.',
+      get: function (s) { return s.m1; },
+      set: function (v) { return { m1: v, preset: 'custom' }; },
+      fmt: function (s) { return fmtNum(s.m1) + ' M☉'; }
+    },
+    {
+      id: 'm2', label: 'Masa 2', min: 1, max: 120, step: 1,
+      hint: 'Qué pasa si la subo: igual que la masa 1; el chirp depende sobre todo de la masa total y de la masa de chirp.',
+      get: function (s) { return s.m2; },
+      set: function (v) { return { m2: v, preset: 'custom' }; },
+      fmt: function (s) { return fmtNum(s.m2) + ' M☉'; }
+    },
+    {
+      id: 'dist', label: 'Distancia', min: 10, max: 1500, step: 1,
+      hint: 'Qué pasa si la alejo: la amplitud cae como 1/distancia. Al doble de distancia, la mitad de h.',
+      get: function (s) { return s.distMpc; },
+      set: function (v) { return { distMpc: v, preset: 'custom' }; },
+      fmt: function (s) { return Math.round(s.distMpc) + ' Mpc'; }
+    },
+    {
+      id: 'incl', label: 'Inclinación', min: 0, max: 90, step: 1,
+      hint: 'Qué pasa si la subo: 0° es de cara (h₊ máxima); 90° es de canto: h× se anula y h₊ baja a la mitad.',
+      get: function (s) { return Math.round(s.incl * 180 / Math.PI); },
+      set: function (v) { return { incl: v * Math.PI / 180 }; },
+      fmt: function (s) { return Math.round(s.incl * 180 / Math.PI) + '°'; }
+    },
+    {
+      id: 'exag', label: 'Exageración visual', min: 0, max: 4, step: 1,
+      hint: 'Multiplica la deformación para verla. Siempre rotulada: ×N es un factor visual, no el valor real.',
+      get: function (s) { return exagIndex(s.exag); },
+      set: function (v) { return { exag: EXAG_STEPS[v] }; },
+      fmt: function (s) { return 'Factor ' + EXAG_LABELS[exagIndex(s.exag)]; }
+    },
+    {
+      id: 'speed', label: 'Velocidad', min: 0.1, max: 2, step: 0.1,
+      hint: 'Qué pasa si la cambio: la simulación va más rápida o más lenta; la física no cambia.',
+      get: function (s) { return s.speed; },
+      set: function (v) { return { speed: Math.round(v * 10) / 10 }; },
+      fmt: function (s) { return s.speed.toFixed(1) + '×'; }
+    }
+  ];
+
+  var TOGGLES = [
+    {
+      key: 'noise', label: 'Ruido del detector',
+      hint: 'Qué pasa si lo activo: aparece ruido gaussiano (rms ≈ 10⁻²²), como en un detector real. A veces la señal se esconde.'
+    },
+    {
+      key: 'realistic', label: 'Valor realista (sin exagerar)',
+      hint: 'Qué pasa si lo activo: se ve la deformación verdadera, tan pequeña que casi no se nota. Eso es lo que LIGO tiene que medir.'
+    }
+  ];
+
+  function makeRange(cfg) {
+    var wrap = el('div', 'ui-field');
+    var head = el('div', 'ui-field-head');
+    var lab = el('label', 'ui-label', cfg.label);
+    var out = el('output', 'ui-out');
+    var input = el('input', 'ui-range');
+    var hint = el('p', 'ui-hint', cfg.hint);
+    input.type = 'range';
+    input.id = 'ui-' + cfg.id;
+    input.min = String(cfg.min);
+    input.max = String(cfg.max);
+    input.step = String(cfg.step);
+    input.setAttribute('aria-describedby', input.id + '-hint');
+    lab.htmlFor = input.id;
+    hint.id = input.id + '-hint';
+    input.addEventListener('input', function () {
+      var v = parseFloat(input.value);
+      if (isFinite(v)) LIGO.setState(cfg.set(v));
+    });
+    head.appendChild(lab);
+    head.appendChild(out);
+    wrap.appendChild(head);
+    wrap.appendChild(input);
+    wrap.appendChild(hint);
+    return { wrap: wrap, input: input, out: out, cfg: cfg };
+  }
+
+  function makeToggle(t) {
+    var wrap = el('div', 'ui-field');
+    var lab = el('label', 'ui-check-label');
+    var input = el('input', 'ui-check');
+    input.type = 'checkbox';
+    input.id = 'ui-' + t.key;
+    input.setAttribute('aria-describedby', input.id + '-hint');
+    input.addEventListener('change', function () {
+      var p = {};
+      p[t.key] = input.checked;
+      LIGO.setState(p);
+    });
+    lab.htmlFor = input.id;
+    lab.appendChild(input);
+    lab.appendChild(el('span', '', t.label));
+    var hint = el('p', 'ui-hint', t.hint);
+    hint.id = input.id + '-hint';
+    wrap.appendChild(lab);
+    wrap.appendChild(hint);
+    return { wrap: wrap, input: input, key: t.key };
+  }
+
+  function audioSupported() {
+    return !!(window.AudioContext || window.webkitAudioContext);
+  }
+
+  function audioOn() {
+    try {
+      if (!aud.ctx) {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return false;
+        aud.ctx = new AC();
+      }
+      if (aud.ctx.state === 'suspended') aud.ctx.resume();
+      var now = aud.ctx.currentTime;
+      var osc = aud.ctx.createOscillator();
+      var g = aud.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(40, now);
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(0.15, now + 0.4);
+      osc.connect(g);
+      g.connect(aud.ctx.destination);
+      osc.start(now);
+      aud.osc = osc;
+      aud.gain = g;
+      aud.on = true;
+      return true;
+    } catch (e) {
+      aud.on = false;
+      return false;
+    }
+  }
+
+  function audioOff() {
+    try {
+      if (aud.osc && aud.gain && aud.ctx) {
+        var now = aud.ctx.currentTime;
+        aud.gain.gain.cancelScheduledValues(now);
+        aud.gain.gain.setValueAtTime(aud.gain.gain.value, now);
+        aud.gain.gain.linearRampToValueAtTime(0, now + 0.3);
+        aud.osc.stop(now + 0.35);
+      }
+    } catch (e) { /* ya detenido */ }
+    aud.osc = null;
+    aud.gain = null;
+    aud.on = false;
+  }
+
+  function audioFrame(f) {
+    if (!aud.on || !aud.osc || !aud.gain || !aud.ctx) return;
+    try {
+      var now = aud.ctx.currentTime;
+      var playing = !!LIGO.state.playing;
+      var target = Math.max(20, Math.min(400, f.f || 20));
+      aud.osc.frequency.setTargetAtTime(target, now, 0.03);
+      aud.gain.gain.setTargetAtTime(playing ? (f.merged ? 0.06 : 0.15) : 0, now, 0.1);
+    } catch (e) { /* ignora */ }
+  }
+
+  function buildControls(root) {
+    root.textContent = '';
+    ctl = { ranges: [], toggles: [], presets: [], presetDesc: null, play: null, audio: null };
+    root.appendChild(el('h2', 'ui-title', 'Controles'));
+
+    var tr = el('div', 'ui-transport');
+    ctl.play = el('button', 'ui-btn ui-btn-primary', 'Pausar');
+    ctl.play.type = 'button';
+    ctl.play.addEventListener('click', function () {
+      LIGO.setState({ playing: !LIGO.state.playing });
+    });
+    var reset = el('button', 'ui-btn', 'Reiniciar');
+    reset.type = 'button';
+    reset.addEventListener('click', function () {
+      LIGO.bus.emit('reset', {});
+      LIGO.setState({ playing: true });
+    });
+    tr.appendChild(ctl.play);
+    tr.appendChild(reset);
+    root.appendChild(tr);
+    root.appendChild(el('p', 'ui-hint', 'Pausar congela la onda. Reiniciar vuelve a empezar la espiral desde el principio.'));
+
+    root.appendChild(el('p', 'ui-group-label', 'Fuentes de ejemplo'));
+    var chips = el('div', 'ui-chips');
+    presetList().forEach(function (p) {
+      var b = el('button', 'ui-chip', p.name);
+      b.type = 'button';
+      b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', function () {
+        LIGO.setState({ preset: p.id, m1: p.m1, m2: p.m2, distMpc: p.distMpc });
+      });
+      chips.appendChild(b);
+      ctl.presets.push({ id: p.id, btn: b });
+    });
+    root.appendChild(chips);
+    ctl.presetDesc = el('p', 'ui-hint', '');
+    root.appendChild(ctl.presetDesc);
+
+    RANGES.forEach(function (cfg) {
+      var r = makeRange(cfg);
+      ctl.ranges.push(r);
+      root.appendChild(r.wrap);
+    });
+
+    TOGGLES.forEach(function (t) {
+      var tg = makeToggle(t);
+      ctl.toggles.push(tg);
+      root.appendChild(tg.wrap);
+    });
+
+    var audioWrap = el('div', 'ui-field');
+    ctl.audio = el('button', 'ui-btn ui-audio', 'Escuchar el chirp');
+    ctl.audio.type = 'button';
+    ctl.audio.setAttribute('aria-pressed', 'false');
+    if (!audioSupported()) {
+      ctl.audio.disabled = true;
+      audioWrap.appendChild(el('p', 'ui-hint', 'Tu navegador no permite reproducir audio.'));
+    } else {
+      audioWrap.appendChild(el('p', 'ui-hint', 'Qué suena: la frecuencia de la onda, en tono grave. Se activa solo al pulsar el botón.'));
+    }
+    ctl.audio.addEventListener('click', function () {
+      if (aud.on) {
+        audioOff();
+      } else {
+        audioOn();
+      }
+      ctl.audio.textContent = aud.on ? 'Silenciar el chirp' : 'Escuchar el chirp';
+      ctl.audio.setAttribute('aria-pressed', aud.on ? 'true' : 'false');
+    });
+    audioWrap.insertBefore(ctl.audio, audioWrap.firstChild);
+    root.appendChild(audioWrap);
+  }
+
+  function syncControls(s) {
+    if (!ctl) return;
+    ctl.ranges.forEach(function (r) {
+      r.input.value = String(r.cfg.get(s));
+      r.out.textContent = r.cfg.fmt(s);
+    });
+    ctl.toggles.forEach(function (t) {
+      t.input.checked = !!s[t.key];
+    });
+    ctl.play.textContent = s.playing ? 'Pausar' : 'Reproducir';
+    ctl.play.setAttribute('aria-pressed', s.playing ? 'true' : 'false');
+    ctl.presets.forEach(function (p) {
+      var on = s.preset === p.id;
+      p.btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      p.btn.classList.toggle('is-on', on);
+    });
+    var found = findPreset(s.preset);
+    ctl.presetDesc.textContent = found
+      ? found.desc
+      : (s.preset === 'custom' ? 'Fuente personalizada: ajusta las masas y la distancia.' : '');
+  }
+
+  /* Lecturas en vivo */
+
+  function buildReadouts(root) {
+    root.textContent = '';
+    ro = {};
+    root.appendChild(el('h2', 'ui-title', 'Lecturas en vivo'));
+    var dl = el('dl', 'ro-list');
+    [
+      ['f', 'Frecuencia de la onda f'],
+      ['h', 'Deformación h₊ ahora'],
+      ['dl', 'ΔL del brazo (real)'],
+      ['dphi', 'Diferencia de fase Δφ'],
+      ['tm', 'Tiempo hasta la fusión'],
+      ['mc', 'Masa de chirp Mc']
+    ].forEach(function (row) {
+      var item = el('div', 'ro-item');
+      item.appendChild(el('dt', 'ro-k', row[1]));
+      var dd = el('dd', 'ro-v', '—');
+      item.appendChild(dd);
+      dl.appendChild(item);
+      ro[row[0]] = dd;
+    });
+    root.appendChild(dl);
+    root.appendChild(el('p', 'ui-hint', 'f sube durante la espiral. ΔL es el cambio real de un brazo de 4 km. Δφ es lo que mide el fotodiodo.'));
+  }
+
+  function updReadouts(f) {
+    if (!ro) return;
+    var s = LIGO.state || {};
+    ro.f.textContent = isFinite(f.f) && f.f > 0 ? f.f.toFixed(1) + ' Hz' : '—';
+    ro.h.textContent = fmtSI(f.hPlus, '');
+    ro.dl.textContent = fmtSI(f.dL, 'm');
+    var note = (!s.realistic && s.exag > 1) ? ' (exagerado ' + EXAG_LABELS[exagIndex(s.exag)] + ')' : '';
+    ro.dphi.textContent = (isFinite(f.dPhi) ? (((f.dPhi + Math.PI) % (2*Math.PI) + 2*Math.PI) % (2*Math.PI) - Math.PI).toFixed(3) : '—') + ' rad (mod 2π)' + note;
+    ro.tm.textContent = f.merged ? 'Ya fusionados (ringdown)' : (isFinite(f.tToMerge) ? f.tToMerge.toFixed(2) + ' s' : '—');
+  }
+
+  function syncChirp(s) {
+    if (ro && ro.mc) ro.mc.textContent = chirpMassOf(s.m1, s.m2).toFixed(2) + ' M☉';
+  }
+
+  /* Escala */
+
+  function buildScale(root) {
+    root.textContent = '';
+    sc = {};
+    root.appendChild(el('h2', 'ui-title', 'Escala: ¿qué tan pequeño es ΔL?'));
+    var track = el('div', 'scale-track');
+    var marks = [
+      { x: ARM, label: 'Brazo 4 km' },
+      { x: 1, label: '1 m' },
+      { x: 1e-3, label: '1 mm' },
+      { x: PROTON, label: 'Protón ≈ 1.7 fm' }
+    ];
+    marks.forEach(function (m, i) {
+      var mk = el('div', 'scale-mark' + (i === 1 ? ' alt' : ''));
+      mk.style.left = logPct(m.x) + '%';
+      mk.appendChild(el('span', 'scale-tick'));
+      mk.appendChild(el('span', 'scale-label', m.label));
+      track.appendChild(mk);
+    });
+    sc.dot = el('div', 'scale-dl');
+    sc.dotLabel = el('span', 'scale-dl-label', '');
+    sc.dot.appendChild(sc.dotLabel);
+    track.appendChild(sc.dot);
+    root.appendChild(track);
+    sc.text = el('p', 'scale-text', '');
+    root.appendChild(sc.text);
+    root.appendChild(el('p', 'ui-hint', 'Escala logarítmica: la posición indica el orden de magnitud (potencias de 10). El punto es ΔL real, nunca exagerado.'));
+  }
+
+  function updScale(dLValue) {
+    if (!sc) return;
+    var a = Math.abs(dLValue || 0);
+    if (a > 0) lastDL = a;
+    var v = lastDL || 1e-18;
+    sc.dot.style.left = logPct(v) + '%';
+    sc.dotLabel.textContent = (a > 0 ? 'ΔL ' : 'ΔL último ') + '≈ ' + fmtSI(v, 'm');
+    var ratio = PROTON / v;
+    var msg;
+    if (ratio >= 300 && ratio <= 5000) {
+      msg = 'Es del orden de mil veces menor que un protón (diámetro del protón / ΔL ≈ ' + Math.round(ratio) + ').';
+    } else if (ratio > 1) {
+      msg = 'Es unas ' + Math.round(ratio) + ' veces menor que un protón.';
+    } else {
+      msg = 'Con este valor, ΔL ya es comparable o mayor que un protón.';
+    }
+    sc.text.textContent = msg;
+  }
+
+  /* Tour */
+
+  function buildTour(root) {
+    root.textContent = '';
+    var idx = 0;
+    root.appendChild(el('h2', 'ui-title', 'Tour guiado'));
+    var dots = el('div', 'tour-dots');
+    var dotBtns = [];
+    MISSIONS.forEach(function (m, i) {
+      var d = el('button', 'tour-dot');
+      d.type = 'button';
+      d.setAttribute('aria-label', 'Ir a la misión ' + (i + 1));
+      d.addEventListener('click', function () { go(i, true); });
+      dots.appendChild(d);
+      dotBtns.push(d);
+    });
+    var meta = el('p', 'tour-meta', '');
+    var h3 = el('h3', 'tour-h', '');
+    var body = el('p', 'tour-body', '');
+    var reto = el('p', 'tour-reto', '');
+    var nav = el('div', 'tour-nav');
+    var prev = el('button', 'ui-btn', 'Anterior');
+    var next = el('button', 'ui-btn ui-btn-primary', 'Siguiente');
+    prev.type = 'button';
+    next.type = 'button';
+    prev.addEventListener('click', function () { go(idx - 1, true); });
+    next.addEventListener('click', function () {
+      go(idx >= MISSIONS.length - 1 ? 0 : idx + 1, true);
+    });
+    nav.appendChild(prev);
+    nav.appendChild(next);
+    root.appendChild(dots);
+    root.appendChild(meta);
+    root.appendChild(h3);
+    root.appendChild(body);
+    var retoLabel = el('strong', '', 'Micro-reto: ');
+    reto.appendChild(retoLabel);
+    reto.appendChild(document.createTextNode(''));
+    root.appendChild(reto);
+    root.appendChild(nav);
+
+    function clearSpots() {
+      var old = document.querySelectorAll('.spot');
+      for (var i = 0; i < old.length; i++) old[i].classList.remove('spot');
+    }
+
+    function go(i, apply) {
+      idx = Math.max(0, Math.min(MISSIONS.length - 1, i));
+      var m = MISSIONS[idx];
+      meta.textContent = 'Misión ' + (idx + 1) + ' de ' + MISSIONS.length;
+      h3.textContent = m.title;
+      body.textContent = m.body;
+      reto.lastChild.textContent = m.reto;
+      dotBtns.forEach(function (d, k) {
+        d.classList.toggle('is-on', k === idx);
+        d.setAttribute('aria-current', k === idx ? 'step' : 'false');
+      });
+      prev.disabled = idx === 0;
+      next.textContent = idx === MISSIONS.length - 1 ? 'Empezar de nuevo' : 'Siguiente';
+      if (apply) LIGO.setState(m.set);
+      clearSpots();
+      m.spot.forEach(function (id) {
+        var target = $(id);
+        if (target) target.classList.add('spot');
+      });
+      LIGO.bus.emit('tourstep', { index: idx, title: m.title });
+    }
+
+    go(0, false);
+  }
+
+  /* Quiz */
+
+  function buildQuiz(root) {
+    root.textContent = '';
+    var st = { i: 0, score: 0 };
+    root.appendChild(el('h2', 'ui-title', 'Mini quiz'));
+    var prog = el('p', 'ui-hint', '');
+    var qEl = el('h3', 'quiz-q', '');
+    var opts = el('div', 'quiz-opts');
+    var fb = el('p', 'quiz-fb', '');
+    fb.setAttribute('aria-live', 'polite');
+    var nextBtn = el('button', 'ui-btn ui-btn-primary', 'Siguiente pregunta');
+    nextBtn.type = 'button';
+    nextBtn.hidden = true;
+    root.appendChild(prog);
+    root.appendChild(qEl);
+    root.appendChild(opts);
+    root.appendChild(fb);
+    root.appendChild(nextBtn);
+
+    function finish() {
+      root.textContent = '';
+      root.appendChild(el('h2', 'ui-title', 'Mini quiz'));
+      var n = QUIZ.length;
+      var msg = st.score === n ? '¡Excelente! Dominas la idea.'
+        : st.score >= 3 ? 'Vas bien. Repasa las preguntas que fallaste.'
+        : 'Conviene volver al tour y al glosario.';
+      root.appendChild(el('p', 'quiz-q', 'Puntaje: ' + st.score + ' de ' + n));
+      root.appendChild(el('p', 'ui-hint', msg));
+      var again = el('button', 'ui-btn ui-btn-primary', 'Reintentar');
+      again.type = 'button';
+      again.addEventListener('click', function () {
+        st.i = 0;
+        st.score = 0;
+        buildQuiz(root);
+      });
+      root.appendChild(again);
+    }
+
+    function render() {
+      if (st.i >= QUIZ.length) { finish(); return; }
+      var q = QUIZ[st.i];
+      prog.textContent = 'Pregunta ' + (st.i + 1) + ' de ' + QUIZ.length;
+      qEl.textContent = q.q;
+      opts.textContent = '';
+      fb.textContent = '';
+      fb.className = 'quiz-fb';
+      nextBtn.hidden = true;
+      nextBtn.textContent = st.i === QUIZ.length - 1 ? 'Ver resultado' : 'Siguiente pregunta';
+      q.opts.forEach(function (text, k) {
+        var b = el('button', 'quiz-opt', text);
+        b.type = 'button';
+        b.addEventListener('click', function () { answer(k, b); });
+        opts.appendChild(b);
+      });
+    }
+
+    function answer(k, btn) {
+      var q = QUIZ[st.i];
+      var all = opts.querySelectorAll('.quiz-opt');
+      var ok = k === q.ans;
+      for (var j = 0; j < all.length; j++) all[j].disabled = true;
+      if (ok) {
+        st.score++;
+        btn.classList.add('is-ok');
+        fb.textContent = q.ok;
+        fb.classList.add('ok');
+      } else {
+        btn.classList.add('is-bad');
+        all[q.ans].classList.add('is-ok');
+        fb.textContent = q.bad;
+        fb.classList.add('bad');
+      }
+      nextBtn.hidden = false;
+    }
+
+    nextBtn.addEventListener('click', function () {
+      st.i++;
+      render();
+    });
+
+    render();
+  }
+
+  /* Glosario y lecciones */
+
+  function buildGlossary(root) {
+    root.textContent = '';
+    root.appendChild(el('h2', 'ui-title', 'Glosario'));
+    root.appendChild(el('p', 'ui-hint', 'Toca un término para ver su significado. Toca otro para cambiar.'));
+    var list = el('ul', 'gl-list');
+    var buttons = [];
+    TERMS.forEach(function (term) {
+      var li = el('li', '');
+      var btn = el('button', 'gl-term', term.t);
+      var tip = el('p', 'gl-tip', term.d);
+      btn.type = 'button';
+      btn.setAttribute('aria-expanded', 'false');
+      tip.hidden = true;
+      btn.addEventListener('click', function () {
+        var open = btn.getAttribute('aria-expanded') !== 'true';
+        buttons.forEach(function (b) {
+          b.btn.setAttribute('aria-expanded', 'false');
+          b.tip.hidden = true;
+        });
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        tip.hidden = !open;
+      });
+      buttons.push({ btn: btn, tip: tip });
+      li.appendChild(btn);
+      li.appendChild(tip);
+      list.appendChild(li);
+    });
+    root.appendChild(list);
+  }
+
+  function buildLessons(root) {
+    root.textContent = '';
+    root.appendChild(el('h2', 'ui-title', 'Lo que debes recordar'));
+    var ul = el('ul', 'lessons-list');
+    LESSONS.forEach(function (t) { ul.appendChild(el('li', '', t)); });
+    root.appendChild(ul);
+  }
+
+  /* Sincronización y arranque */
+
+  function syncAll() {
+    var s = LIGO.state;
+    if (!s) return;
+    syncControls(s);
+    syncChirp(s);
+  }
+
+  function onFrame(data) {
+    var f = data || LIGO.frame;
+    if (!f) return;
+    var now = Date.now();
+    if (now - lastRead >= READ_MS) {
+      lastRead = now;
+      updReadouts(f);
+      updScale(f.dL);
+    }
+    audioFrame(f);
+  }
+
+  function init() {
+    var c = $('controls');
+    if (c) buildControls(c);
+    var r = $('readouts');
+    if (r) buildReadouts(r);
+    var s = $('scale');
+    if (s) { buildScale(s); updScale(0); }
+    var t = $('tour');
+    if (t) buildTour(t);
+    var q = $('quiz');
+    if (q) buildQuiz(q);
+    var g = $('glossary');
+    if (g) buildGlossary(g);
+    var l = $('lessons');
+    if (l) buildLessons(l);
+    syncAll();
+    LIGO.bus.on('state', syncAll);
+    LIGO.bus.on('frame', onFrame);
+  }
+
+  LIGO.ui = { init: init };
+})();
+
+document.addEventListener('DOMContentLoaded',()=>LIGO.boot());
+if(document.readyState!=='loading')LIGO.boot();
+</script>
